@@ -1,3 +1,4 @@
+import type { Style } from './style.svelte';
 import { Point } from './point.svelte';
 
 interface PolygonConfig {
@@ -5,10 +6,12 @@ interface PolygonConfig {
 	radius?: number;
 	centerX?: number;
 	centerY?: number;
+	style?: Style;
 }
 
 export class Polygon {
 	vertices = $state<Point[]>([]);
+	style = $state<Style>();
 
 	constructor(verticesOrConfig: Point[] | PolygonConfig) {
 		if (Array.isArray(verticesOrConfig)) {
@@ -16,20 +19,21 @@ export class Polygon {
 		} else {
 			const { sides, radius = 50, centerX = 0, centerY = 0 } = verticesOrConfig;
 			this.vertices = this.generateRegularVertices(sides, radius, centerX, centerY);
+			this.style = verticesOrConfig.style;
 		}
 	}
 
 	private generateRegularVertices(sides: number, radius: number, centerX: number, centerY: number): Point[] {
 		const vertices: Point[] = [];
 		const angleStep = (2 * Math.PI) / sides;
-		
+
 		for (let i = 0; i < sides; i++) {
 			const angle = i * angleStep - Math.PI / 2; // Start from top
 			const x = centerX + radius * Math.cos(angle);
 			const y = centerY + radius * Math.sin(angle);
 			vertices.push(new Point(x, y));
 		}
-		
+
 		return vertices;
 	}
 
@@ -117,6 +121,26 @@ export class Polygon {
 			ctx.lineTo(this.vertices[i].x, this.vertices[i].y);
 		}
 		ctx.closePath();
-		ctx.stroke();
+
+		this.color(ctx)
+	}
+
+	color(ctx: CanvasRenderingContext2D): void {
+		const fillColor = this.style?.fill ?? 'aquamarine';
+		const strokeColor = this.style?.stroke ?? 'white';
+
+		ctx.fillStyle = this.computeColor(fillColor);
+		ctx.strokeStyle = this.computeColor(strokeColor);
+		ctx.lineWidth = this.style?.strokeWidth ?? 1;
+		ctx.stroke()
+		ctx.fill()
+	}
+
+	private computeColor(color: string): string {
+		if (color.startsWith('var(') && color.endsWith(')')) {
+			const varName = color.slice(4, -1);
+			return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || color;
+		}
+		return color;
 	}
 }

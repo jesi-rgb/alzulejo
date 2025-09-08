@@ -5,11 +5,15 @@ export interface CanvasConfig {
 }
 
 export class Canvas {
+	private renderables = $state<(() => void)[]>([]);
+
 	canvas = $state<HTMLCanvasElement | null>(null);
 	ctx = $state<CanvasRenderingContext2D | null>(null);
 	isReady = $derived(this.canvas !== null && this.ctx !== null);
 
-	private renderables = $state<(() => void)[]>([]);
+	width = $derived(() => this.canvas?.width ?? 0);
+	height = $derived(() => this.canvas?.height ?? 0);
+
 
 	constructor(private config: CanvasConfig = {}) {
 		// Auto-redraw effect
@@ -60,12 +64,10 @@ export class Canvas {
 		this.renderables.forEach(render => render());
 	}
 
-	// Add a renderable object that draws itself
 	add(renderable: { draw: (ctx: CanvasRenderingContext2D) => void }) {
 		this.renderables.push(() => renderable.draw(this.ctx!));
 	}
 
-	// Remove all renderables
 	clear() {
 		if (!this.ctx || !this.canvas) return;
 
@@ -73,7 +75,6 @@ export class Canvas {
 		this.ctx.clearRect(0, 0, rect.width, rect.height);
 	}
 
-	// Clear renderables list
 	clearRenderables() {
 		this.renderables.length = 0;
 	}
@@ -87,9 +88,3 @@ export class Canvas {
 		this.ctx.restore();
 	}
 }
-
-export function createCanvas(config?: CanvasConfig) {
-	return new Canvas(config);
-}
-
-// Removed - no longer needed with automatic reactivity
