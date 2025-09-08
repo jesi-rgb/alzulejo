@@ -46,29 +46,47 @@ console.log(pentagon.center);    // Auto-calculated
 ```
 
 ### Canvas Rendering
-```typescript
-// Simple drawing
-polygon.draw(ctx);
 
-// Built-in high-DPI support
-// Automatic reactivity with $effect()
+The library includes a powerful reactive canvas system that handles high-DPI rendering and automatic redrawing:
+
+```typescript
+import { createCanvas } from './render/canvas.svelte';
+
+const canvas = createCanvas({ width: 700, height: 600 });
+
+// Add shapes - they auto-redraw when changed!
+canvas.add(polygon);
 ```
+
+### Features
+- **High-DPI Support**: Automatic device pixel ratio detection
+- **Reactive Rendering**: Auto-redraw when geometry changes
+- **Simple API**: Just add shapes and forget about manual drawing
+- **Style Management**: Built-in context save/restore
 
 ## Usage
 
 ```svelte
 <script>
   import { Polygon } from './core/geometry';
+  import { createCanvas } from './render/canvas.svelte';
   
+  const canvas = createCanvas({ width: 700, height: 600 });
   let polygon = $state(new Polygon({ sides: 6, radius: 100 }));
   
-  // Polygon automatically redraws when changed
   function changeShape() {
+    canvas.clearRenderables();
     polygon = new Polygon({ sides: 8, radius: 120 });
+    canvas.add(polygon);
   }
+  
+  onMount(() => {
+    canvas.setup(canvas.canvas);
+    canvas.add(polygon);
+  });
 </script>
 
-<canvas bind:this={canvas}></canvas>
+<canvas bind:this={canvas.canvas}></canvas>
 <button onclick={changeShape}>Octagon</button>
 ```
 
@@ -81,11 +99,35 @@ src/
 │   ├── polygon.svelte.ts  # Reactive Polygon class  
 │   ├── vector.ts          # Vector2D class
 │   └── index.ts           # Exports
+├── render/
+│   └── canvas.svelte.ts   # Reactive canvas utilities
 ├── lib/components/
-│   └── CanvasRenderer.svelte # Interactive canvas component
+│   └── CanvasRenderer.svelte # Interactive canvas demo
 └── routes/
     └── +page.svelte       # Demo page
 ```
+
+## Canvas API Reference
+
+### createCanvas(config?)
+Creates a new reactive canvas instance.
+
+```typescript
+interface CanvasConfig {
+  width?: number;
+  height?: number;  
+  pixelRatio?: number;
+}
+
+const canvas = createCanvas({ width: 800, height: 600 });
+```
+
+### Canvas Methods
+- `setup(canvasElement)` - Initialize with HTML canvas element
+- `add(renderable)` - Add shape with `.draw(ctx)` method
+- `clearRenderables()` - Remove all added shapes
+- `clearCanvas()` - Clear canvas content
+- `withStyle(style, drawFn)` - Draw with temporary styles
 
 ## Development
 

@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { Point } from "../../core/geometry/point.svelte";
 	import { Polygon } from "../../core/geometry/polygon.svelte";
+	import { createCanvas, Canvas } from "../../render/canvas.svelte";
 
-	let canvasRef: HTMLCanvasElement | null = $state(null);
-	let ctx: CanvasRenderingContext2D | null = $state(null);
+	const canvas = new Canvas({ width: 700, height: 600 });
 
 	// Reactive polygons
 	let currentPolygon = $state(
@@ -12,79 +11,25 @@
 	);
 
 	function createPolygon(sides: number) {
+		canvas.clearRenderables();
 		currentPolygon = new Polygon({
 			sides,
 			radius: 70,
 			centerX: 350,
 			centerY: 300,
 		});
+		canvas.add(currentPolygon);
 	}
-
-	function draw() {
-		if (!ctx || !canvasRef) return;
-
-		ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
-		currentPolygon.draw(ctx);
-	}
-
-	// Redraw when polygon changes
-	$effect(() => {
-		currentPolygon.vertices;
-		draw();
-	});
 
 	onMount(() => {
-		const dpr = window.devicePixelRatio || 1;
-		const rect = canvasRef.getBoundingClientRect();
-
-		canvasRef.width = rect.width * dpr;
-		canvasRef.height = rect.height * dpr;
-
-		ctx = canvasRef.getContext("2d");
-		ctx.scale(dpr, dpr);
-
-		draw();
-	});
-
-	function updatePolygon(type: string) {
-		switch (type) {
-			case "triangle":
-				currentPolygon = new Polygon({
-					sides: 3,
-					radius: 70,
-					centerX: 200,
-					centerY: 150,
-				});
-				break;
-			case "square":
-				currentPolygon = new Polygon({
-					sides: 4,
-					radius: 70,
-					centerX: 200,
-					centerY: 150,
-				});
-				break;
-			case "pentagon":
-				currentPolygon = new Polygon({
-					sides: 5,
-					radius: 70,
-					centerX: 200,
-					centerY: 150,
-				});
-				break;
-			case "hexagon":
-				currentPolygon = new Polygon({
-					sides: 6,
-					radius: 70,
-					centerX: 200,
-					centerY: 150,
-				});
-				break;
+		if (canvas.canvas) {
+			canvas.setup(canvas.canvas);
+			canvas.add(currentPolygon);
 		}
-	}
+	});
 </script>
 
-<canvas bind:this={canvasRef}></canvas>
+<canvas bind:this={canvas.canvas}></canvas>
 
 <div>
 	<button onclick={() => createPolygon(3)}>Triangle</button>
