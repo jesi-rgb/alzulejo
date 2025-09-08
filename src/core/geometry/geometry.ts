@@ -1,10 +1,4 @@
 
-interface Point2D {
-	x: number;
-	y: number;
-}
-
-
 class Vector2D {
 	constructor(public x: number, public y: number) { }
 
