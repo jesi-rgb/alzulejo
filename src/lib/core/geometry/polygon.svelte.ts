@@ -92,13 +92,31 @@ export class Polygon {
 		return perimeter;
 	});
 
-	center = $derived(() => {
+	center = $derived.by(() => {
 		if (this.vertices.length === 0) return new Point(0, 0);
 
 		const sumX = this.vertices.reduce((sum, vertex) => sum + vertex.x, 0);
 		const sumY = this.vertices.reduce((sum, vertex) => sum + vertex.y, 0);
 		return new Point(sumX / this.vertices.length, sumY / this.vertices.length);
 	});
+
+	rotate(angle: number): Polygon {
+		const centerPoint = this.center;
+		const cos = Math.cos(angle);
+		const sin = Math.sin(angle);
+
+		this.vertices.forEach(vertex => {
+			const dx = vertex.x - centerPoint.x;
+			const dy = vertex.y - centerPoint.y;
+
+			vertex.x = centerPoint.x + dx * cos - dy * sin;
+			vertex.y = centerPoint.y + dx * sin + dy * cos;
+		});
+
+		const polygon = new Polygon(this.vertices);
+		polygon.style = this.style;
+		return polygon
+	}
 
 	contains(point: Point): boolean {
 		let inside = false;
@@ -128,12 +146,14 @@ export class Polygon {
 	color(ctx: CanvasRenderingContext2D): void {
 		const fillColor = this.style?.fill ?? 'aquamarine';
 		const strokeColor = this.style?.stroke ?? 'white';
+		const fillOpacity = this.style?.fillOpacity ?? 1;
+		const strokeOpacity = this.style?.strokeOpacity ?? 1;
 
-		ctx.fillStyle = this.computeColor(fillColor);
-		ctx.strokeStyle = this.computeColor(strokeColor);
+		ctx.fillStyle = this.applyOpacity(this.computeColor(fillColor), fillOpacity);
+		ctx.strokeStyle = this.applyOpacity(this.computeColor(strokeColor), strokeOpacity);
 		ctx.lineWidth = this.style?.strokeWidth ?? 1;
-		ctx.stroke()
 		ctx.fill()
+		ctx.stroke()
 	}
 
 	private computeColor(color: string): string {
@@ -141,6 +161,28 @@ export class Polygon {
 			const varName = color.slice(4, -1);
 			return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || color;
 		}
+		return color;
+	}
+
+	private applyOpacity(color: string, opacity: number): string {
+		if (opacity === 1) return color;
+
+		const canvas = document.createElement('canvas');
+		const ctx = canvas.getContext('2d')!;
+		ctx.fillStyle = color;
+		const computedColor = ctx.fillStyle;
+
+		if (computedColor.startsWith('#')) {
+			const hex = computedColor.slice(1);
+			const r = parseInt(hex.substring(0, 2), 16);
+			const g = parseInt(hex.substring(2, 4), 16);
+			const b = parseInt(hex.substring(4, 6), 16);
+			return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+		} else if (computedColor.startsWith('rgb(')) {
+			const rgb = computedColor.slice(4, -1);
+			return `rgba(${rgb}, ${opacity})`;
+		}
+
 		return color;
 	}
 }

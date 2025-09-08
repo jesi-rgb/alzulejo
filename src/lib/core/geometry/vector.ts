@@ -1,8 +1,8 @@
 
-import { Point } from './point';
+import { Point } from './point.svelte';
 
 export class Vector2D {
-	constructor(public start: Point, public end: Point) {}
+	constructor(public start: Point, public end: Point) { }
 
 	get x(): number {
 		return this.end.x - this.start.x;
