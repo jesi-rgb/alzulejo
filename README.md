@@ -13,14 +13,14 @@ A TypeScript library for generating tiling patterns and Islamic tessellations, o
 ## Core Classes
 
 ### Point
-```typescript
+```ts
 // Create reactive points
 const point = new Point(x, y);
 point.x = 100; // Automatically reactive
 ```
 
 ### Polygon
-```typescript
+```ts
 // Create from vertices
 const triangle = new Polygon([
   new Point(0, 0),
@@ -49,7 +49,7 @@ console.log(pentagon.center);    // Auto-calculated
 
 The library includes a powerful reactive canvas system that handles high-DPI rendering and automatic redrawing:
 
-```typescript
+```ts
 import { createCanvas } from './render/canvas.svelte';
 
 const canvas = createCanvas({ width: 700, height: 600 });
@@ -112,7 +112,7 @@ src/
 ### createCanvas(config?)
 Creates a new reactive canvas instance.
 
-```typescript
+```ts
 interface CanvasConfig {
   width?: number;
   height?: number;  
@@ -129,12 +129,3 @@ const canvas = createCanvas({ width: 800, height: 600 });
 - `clearCanvas()` - Clear canvas content
 - `withStyle(style, drawFn)` - Draw with temporary styles
 
-## Development
-
-Built with:
-- **SvelteKit 5**: Latest reactive framework
-- **TypeScript**: Full type safety
-- **Canvas 2D**: High-performance rendering
-- **Runes**: `$state`, `$derived`, `$effect` for reactivity
-
-Perfect foundation for building tessellation and tiling pattern generators!
