@@ -10,15 +10,32 @@ interface PolygonConfig {
 }
 
 export class Polygon {
-	vertices = $state<Point[]>([]);
 	style = $state<Style>();
+	sides = $state<number>(3);
+	radius = $state<number>(50);
+	centerX = $state<number>(0);
+	centerY = $state<number>(0);
+	_manualVertices = $state<Point[] | null>(null);
+
+	vertices = $derived.by(() => {
+		if (this._manualVertices) {
+			return this._manualVertices;
+		}
+		if (this.sides && this.radius !== undefined && this.centerX !== undefined && this.centerY !== undefined) {
+			return this.generateRegularVertices(this.sides, this.radius, this.centerX, this.centerY);
+		}
+		return [];
+	});
 
 	constructor(verticesOrConfig: Point[] | PolygonConfig) {
 		if (Array.isArray(verticesOrConfig)) {
-			this.vertices = verticesOrConfig;
+			this._manualVertices = verticesOrConfig;
 		} else {
 			const { sides, radius = 50, centerX = 0, centerY = 0 } = verticesOrConfig;
-			this.vertices = this.generateRegularVertices(sides, radius, centerX, centerY);
+			this.sides = sides;
+			this.radius = radius;
+			this.centerX = centerX;
+			this.centerY = centerY;
 			this.style = verticesOrConfig.style;
 		}
 	}

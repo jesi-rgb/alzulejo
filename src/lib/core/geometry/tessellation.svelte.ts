@@ -9,7 +9,10 @@ interface TessellationConfig {
 	width: number;
 	height: number;
 	spacing?: number;
+	offset?: number;
 	style?: Style;
+	style1?: Style;
+	style2?: Style;
 }
 
 export class Tessellation {
@@ -18,7 +21,10 @@ export class Tessellation {
 	width = $state(800);
 	height = $state(600);
 	spacing = $state(0);
+	offset = $state(0);
 	style = $state<Style>();
+	style1 = $state<Style>();
+	style2 = $state<Style>();
 
 	constructor(config: TessellationConfig) {
 		this.type = config.type;
@@ -26,10 +32,13 @@ export class Tessellation {
 		this.width = config.width;
 		this.height = config.height;
 		this.spacing = config.spacing ?? 0;
+		this.offset = config.offset ?? 0;
 		this.style = config.style;
+		this.style1 = config.style1;
+		this.style2 = config.style2;
 	}
 
-	polygons = $derived.by(() => {
+	polygons: Polygon[] = $derived.by(() => {
 		switch (this.type) {
 			case 'triangle':
 				return this.generateTriangleTessellation();
@@ -42,16 +51,24 @@ export class Tessellation {
 		}
 	});
 
+	num_elements = $derived(this.polygons.length)
+
 	private generateSquareTessellation(): Polygon[] {
 		const polygons: Polygon[] = [];
-		const step = this.size * 2 + this.spacing;
+		const stepX = this.size * 2 + this.spacing;
+		const stepY = this.size + this.spacing;
 
-		for (let x = this.size; x < this.width; x += step) {
-			for (let y = this.size; y < this.height; y += step) {
-				const polygon = Polygon.square(this.size, x, y);
+		let rowIndex = 0, colIndex = 0;
+		for (let y = 0; y < this.height + this.size; y += stepY) {
+			const offsetX = rowIndex % 2 === 0 ? 0 : this.size + this.spacing * 0.5;
+			colIndex = 0;
+			for (let x = 0; x < this.width + this.size; x += stepX) {
+				const polygon = Polygon.square(this.size, x + offsetX, y);
 				if (this.style) polygon.style = this.style;
 				polygons.push(polygon);
+				colIndex++;
 			}
+			rowIndex++;
 		}
 
 		return polygons;
@@ -59,55 +76,42 @@ export class Tessellation {
 
 	private generateTriangleTessellation(): Polygon[] {
 		const polygons: Polygon[] = [];
-		const height = this.size * 3 * Math.sin(Math.PI / 6);
-		const width = this.size * Math.sqrt(3) / 2;
+		const sideLength = 2 * this.size * Math.sin(Math.PI / 3);
 
-		const style1 = new Style('red', 0.8, 'darkred', 2, 1);
-		const style2 = new Style('blue', 0.8, 'darkblue', 2, 1);
+		const height = this.size * 3 * Math.sin(Math.PI / 6);
+		const width = sideLength / 2;
+
+		const spacingX = this.spacing;
+		const spacingY = this.spacing * Math.sin(Math.PI / 3);
 
 		let rowIndex = 0;
 		let colIndex = 0;
-		for (let x = 0; x < this.width + width; x += width + this.spacing) {
-			for (let y = 0; y < this.height + height; y += height + this.spacing) {
+
+		for (let y = 0; y < this.height + height; y += height + spacingY) {
+			const offsetX = rowIndex % 2 === 0 ? this.offset : (sideLength + spacingY) * 0.5 + this.offset;
+			colIndex = 0;
+			for (let x = 0; x < this.width + width; x += width + spacingX) {
 				const upward = colIndex % 2 === 0;
 				let polygon;
 
 				if (upward) {
-					polygon = Polygon.triangle(this.size, x, y - this.size * 0.5).rotate(Math.PI);
-					polygon.style = style1;
+					polygon = Polygon.triangle(this.size, x + offsetX, y - this.size * 0.5).rotate(Math.PI);
+					if (this.style1) polygon.style = this.style1;
+					else if (this.style) polygon.style = this.style;
 				}
 				else {
-					polygon = Polygon.triangle(this.size, x, y);
-					polygon.style = style2;
+					polygon = Polygon.triangle(this.size, x + offsetX, y);
+					if (this.style2) polygon.style = this.style2;
+					else if (this.style) polygon.style = this.style;
 				}
 
 				polygons.push(polygon);
-				rowIndex++;
+				colIndex++;
 			}
-			colIndex++
+			rowIndex++
 		}
 
-
-
-		// for (let y = this.size; y < this.height; y += height) {
-		// 	const offsetX = (rowIndex % 2) * (width * 0.5);
-		//
-		// 	for (let x = this.size + offsetX; x < this.width; x += width) {
-		// 		const upward = (rowIndex + Math.floor((x - offsetX) / width)) % 2 === 0;
-		// 		const offsetY = upward ? 0 : height * 0.5;
-		// 		const polygon = Polygon.triangle(this.size, x, y);
-		//
-		// 		if (!upward) {
-		// 			polygon.rotate(Math.PI);
-		// 		}
-		//
-		// 		if (this.style) polygon.style = this.style;
-		// 		polygons.push(polygon);
-		// 	}
-		// 	rowIndex++;
-		// }
-
-		return polygons;
+		return polygons
 	}
 
 	private generateHexagonTessellation(): Polygon[] {

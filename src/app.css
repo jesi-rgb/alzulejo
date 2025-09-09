@@ -1,58 +1,209 @@
 :root {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --text-primary: #212529;
-  --text-secondary: #6c757d;
-  --border-color: #dee2e6;
-  --accent-color: #0d6efd;
-  --accent-hover: #0b5ed7;
-  --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  /* Base colors */
+  --base-100: #ffffff;
+  --base-200: #f2f2f2;
+  --base-300: #e5e6e6;
+  --base-content: #1f2937;
+  
+  /* Primary colors */
+  --primary: #570df8;
+  --primary-focus: #4506cb;
+  --primary-content: #ffffff;
+  
+  /* Secondary colors */
+  --secondary: #f000b8;
+  --secondary-focus: #bd0091;
+  --secondary-content: #ffffff;
+  
+  /* Accent colors */
+  --accent: #37cdbe;
+  --accent-focus: #2aa79b;
+  --accent-content: #ffffff;
+  
+  /* Neutral colors */
+  --neutral: #3d4451;
+  --neutral-focus: #2a2e37;
+  --neutral-content: #ffffff;
+  
+  /* Info colors */
+  --info: #3abff8;
+  --info-content: #002b3d;
+  
+  /* Success colors */
+  --success: #36d399;
+  --success-content: #003320;
+  
+  /* Warning colors */
+  --warning: #fbbd23;
+  --warning-content: #382800;
+  
+  /* Error colors */
+  --error: #f87272;
+  --error-content: #470000;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-primary: #1a1a1a;
-    --bg-secondary: #2d2d2d;
-    --text-primary: #ffffff;
-    --text-secondary: #b3b3b3;
-    --border-color: #404040;
-    --accent-color: #4dabf7;
-    --accent-hover: #339af0;
-    --shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    /* Base colors */
+    --base-100: #1d232a;
+    --base-200: #191e24;
+    --base-300: #15191e;
+    --base-content: #a6adba;
+    
+    /* Primary colors */
+    --primary: #661ae6;
+    --primary-focus: #7c3aed;
+    --primary-content: #ffffff;
+    
+    /* Secondary colors */
+    --secondary: #d926aa;
+    --secondary-focus: #f471b5;
+    --secondary-content: #ffffff;
+    
+    /* Accent colors */
+    --accent: #1fb2a6;
+    --accent-focus: #2dd4bf;
+    --accent-content: #ffffff;
+    
+    /* Neutral colors */
+    --neutral: #2a323c;
+    --neutral-focus: #1b2026;
+    --neutral-content: #a6adba;
+    
+    /* Info colors */
+    --info: #0ea5e9;
+    --info-content: #000d1a;
+    
+    /* Success colors */
+    --success: #10b981;
+    --success-content: #000d0a;
+    
+    /* Warning colors */
+    --warning: #f59e0b;
+    --warning-content: #1a0b00;
+    
+    /* Error colors */
+    --error: #ef4444;
+    --error-content: #1a0000;
   }
 }
 
 body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  background-color: var(--base-100);
+  color: var(--base-content);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Background utilities */
+.bg-base-100 { background-color: var(--base-100); }
+.bg-base-200 { background-color: var(--base-200); }
+.bg-base-300 { background-color: var(--base-300); }
+.bg-primary { background-color: var(--primary); }
+.bg-secondary { background-color: var(--secondary); }
+.bg-accent { background-color: var(--accent); }
+.bg-neutral { background-color: var(--neutral); }
+.bg-info { background-color: var(--info); }
+.bg-success { background-color: var(--success); }
+.bg-warning { background-color: var(--warning); }
+.bg-error { background-color: var(--error); }
+
+/* Text color utilities */
+.text-base-content { color: var(--base-content); }
+.text-primary { color: var(--primary); }
+.text-primary-content { color: var(--primary-content); }
+.text-secondary { color: var(--secondary); }
+.text-secondary-content { color: var(--secondary-content); }
+.text-accent { color: var(--accent); }
+.text-accent-content { color: var(--accent-content); }
+.text-neutral { color: var(--neutral); }
+.text-neutral-content { color: var(--neutral-content); }
+.text-info { color: var(--info); }
+.text-info-content { color: var(--info-content); }
+.text-success { color: var(--success); }
+.text-success-content { color: var(--success-content); }
+.text-warning { color: var(--warning); }
+.text-warning-content { color: var(--warning-content); }
+.text-error { color: var(--error); }
+.text-error-content { color: var(--error-content); }
+
+/* Border utilities */
+.border-base-200 { border-color: var(--base-200); }
+.border-base-300 { border-color: var(--base-300); }
+.border-primary { border-color: var(--primary); }
+.border-secondary { border-color: var(--secondary); }
+.border-accent { border-color: var(--accent); }
+.border-neutral { border-color: var(--neutral); }
+
+/* Component styles */
 .card {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow);
+  background-color: var(--base-200);
+  border: 1px solid var(--base-300);
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 }
 
-.button {
-  background-color: var(--accent-color);
-  color: white;
+.btn {
   border: none;
   padding: 0.5rem 1rem;
-  border-radius: 0.25rem;
+  border-radius: 0.5rem;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.button:hover {
-  background-color: var(--accent-hover);
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-content);
+}
+.btn-primary:hover {
+  background-color: var(--primary-focus);
 }
 
-.text-secondary {
-  color: var(--text-secondary);
+.btn-secondary {
+  background-color: var(--secondary);
+  color: var(--secondary-content);
+}
+.btn-secondary:hover {
+  background-color: var(--secondary-focus);
 }
 
-.border {
-  border-color: var(--border-color);
+.btn-accent {
+  background-color: var(--accent);
+  color: var(--accent-content);
+}
+.btn-accent:hover {
+  background-color: var(--accent-focus);
+}
+
+.btn-neutral {
+  background-color: var(--neutral);
+  color: var(--neutral-content);
+}
+.btn-neutral:hover {
+  background-color: var(--neutral-focus);
+}
+
+.btn-info {
+  background-color: var(--info);
+  color: var(--info-content);
+}
+
+.btn-success {
+  background-color: var(--success);
+  color: var(--success-content);
+}
+
+.btn-warning {
+  background-color: var(--warning);
+  color: var(--warning-content);
+}
+
+.btn-error {
+  background-color: var(--error);
+  color: var(--error-content);
 }

@@ -6,6 +6,7 @@ export interface CanvasConfig {
 
 export class Canvas {
 	private renderables = $state<(() => void)[]>([]);
+	private renderScheduled = false;
 
 	canvas = $state<HTMLCanvasElement | null>(null);
 	ctx = $state<CanvasRenderingContext2D | null>(null);
@@ -16,12 +17,20 @@ export class Canvas {
 
 
 	constructor(private config: CanvasConfig = {}) {
-		// Auto-redraw effect
+		// Throttled auto-redraw effect
 		$effect(() => {
-			if (this.isReady) {
-				this.performDraw();
+			if (this.isReady && !this.renderScheduled) {
+				// Trigger when canvas is ready OR when renderables change
+				this.renderables.length;
+				this.scheduleRender();
 			}
 		});
+	}
+
+	private scheduleRender() {
+		if (this.renderScheduled) return;
+
+		this.performDraw();
 	}
 
 	setup(canvasElement: HTMLCanvasElement) {
@@ -50,17 +59,10 @@ export class Canvas {
 		}
 	}
 
-	clearCanvas() {
-		if (!this.ctx || !this.canvas) return;
-
-		const rect = this.canvas.getBoundingClientRect();
-		this.ctx.clearRect(0, 0, rect.width, rect.height);
-	}
-
 	private performDraw() {
 		if (!this.isReady) return;
 
-		this.clearCanvas();
+		this.clear();
 		this.renderables.forEach(render => render());
 	}
 
