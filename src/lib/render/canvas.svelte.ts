@@ -66,8 +66,8 @@ export class Canvas {
 		this.renderables.forEach(render => render());
 	}
 
-	add(renderable: { draw: (ctx: CanvasRenderingContext2D) => void }) {
-		this.renderables.push(() => renderable.draw(this.ctx!));
+	add(renderable: { draw: (ctx: CanvasRenderingContext2D, ...args: any[]) => void }, ...drawArgs: any[]) {
+		this.renderables.push(() => renderable.draw(this.ctx!, ...drawArgs));
 	}
 
 	clear() {
@@ -88,5 +88,33 @@ export class Canvas {
 		Object.assign(this.ctx, style);
 		drawFn(this.ctx);
 		this.ctx.restore();
+	}
+
+	static computeColor(color: string): string {
+		if (color.startsWith('var(') && color.endsWith(')')) {
+			const varName = color.slice(4, -1);
+			return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || color;
+		}
+		return color;
+	}
+
+	static applyOpacity(color: string, opacity: number, ctx: CanvasRenderingContext2D): string {
+		if (opacity === 1) return color;
+
+		ctx.fillStyle = color;
+		const computedColor = ctx.fillStyle;
+
+		if (computedColor.startsWith('#')) {
+			const hex = computedColor.slice(1);
+			const r = parseInt(hex.substring(0, 2), 16);
+			const g = parseInt(hex.substring(2, 4), 16);
+			const b = parseInt(hex.substring(4, 6), 16);
+			return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+		} else if (computedColor.startsWith('rgb(')) {
+			const rgb = computedColor.slice(4, -1);
+			return `rgba(${rgb}, ${opacity})`;
+		}
+
+		return color;
 	}
 }

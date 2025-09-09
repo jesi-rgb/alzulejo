@@ -1,5 +1,6 @@
 import { Polygon } from './polygon.svelte';
 import { Style } from './style.svelte';
+import { Canvas } from '../../render/canvas.svelte';
 
 type TessellationType = 'triangle' | 'square' | 'hexagon';
 
@@ -10,6 +11,7 @@ interface TessellationConfig {
 	height: number;
 	spacing?: number;
 	offset?: number;
+	contactAngle?: number;
 	style?: Style;
 	style1?: Style;
 	style2?: Style;
@@ -22,6 +24,7 @@ export class Tessellation {
 	height = $state(600);
 	spacing = $state(0);
 	offset = $state(0);
+	contactAngle = $state(22.5);
 	style = $state<Style>();
 	style1 = $state<Style>();
 	style2 = $state<Style>();
@@ -33,6 +36,7 @@ export class Tessellation {
 		this.height = config.height;
 		this.spacing = config.spacing ?? 0;
 		this.offset = config.offset ?? 0;
+		this.contactAngle = config.contactAngle ?? 22.5;
 		this.style = config.style;
 		this.style1 = config.style1;
 		this.style2 = config.style2;
@@ -64,6 +68,7 @@ export class Tessellation {
 			colIndex = 0;
 			for (let x = 0; x < this.width + this.size; x += stepX) {
 				const polygon = Polygon.square(this.size, x + offsetX, y);
+				polygon.contactAngle = this.contactAngle;
 				if (this.style) polygon.style = this.style;
 				polygons.push(polygon);
 				colIndex++;
@@ -96,11 +101,13 @@ export class Tessellation {
 
 				if (upward) {
 					polygon = Polygon.triangle(this.size, x + offsetX, y - this.size * 0.5).rotate(Math.PI);
+					polygon.contactAngle = this.contactAngle;
 					if (this.style1) polygon.style = this.style1;
 					else if (this.style) polygon.style = this.style;
 				}
 				else {
 					polygon = Polygon.triangle(this.size, x + offsetX, y);
+					polygon.contactAngle = this.contactAngle;
 					if (this.style2) polygon.style = this.style2;
 					else if (this.style) polygon.style = this.style;
 				}
@@ -125,7 +132,7 @@ export class Tessellation {
 
 			for (let x = this.size + offsetX; x < this.width; x += hexWidth) {
 				const polygon = Polygon.hexagon(this.size, x, y);
-
+				polygon.contactAngle = this.contactAngle;
 				if (this.style) polygon.style = this.style;
 				polygons.push(polygon);
 			}
@@ -141,13 +148,21 @@ export class Tessellation {
 		polygonCount: this.polygons.length
 	}));
 
-	draw(ctx: CanvasRenderingContext2D): void {
+	draw(ctx: CanvasRenderingContext2D, showPolygons: boolean = true, showMidpoints: boolean = false, showRays: boolean = true): void {
 		if (this.polygons.length === 0) return;
 
-		const styleGroups = this.groupPolygonsByStyle();
+		if (showPolygons) {
+			const styleGroups = this.groupPolygonsByStyle();
 
-		for (const [, polygons] of styleGroups) {
-			this.drawPolygonGroup(ctx, polygons);
+			for (const [, polygons] of styleGroups) {
+				this.drawPolygonGroup(ctx, polygons);
+			}
+		}
+
+		if (showMidpoints || showRays) {
+			for (const polygon of this.polygons) {
+				polygon.draw(ctx, showMidpoints, showRays, false);
+			}
 		}
 	}
 
@@ -199,41 +214,13 @@ export class Tessellation {
 		const fillOpacity = firstPolygon.style?.fillOpacity ?? 1;
 		const strokeOpacity = firstPolygon.style?.strokeOpacity ?? 1;
 
-		ctx.fillStyle = this.applyOpacity(this.computeColor(fillColor), fillOpacity);
-		ctx.strokeStyle = this.applyOpacity(this.computeColor(strokeColor), strokeOpacity);
+		ctx.fillStyle = Canvas.applyOpacity(Canvas.computeColor(fillColor), fillOpacity, ctx);
+		ctx.strokeStyle = Canvas.applyOpacity(Canvas.computeColor(strokeColor), strokeOpacity, ctx);
 		ctx.lineWidth = firstPolygon.style?.strokeWidth ?? 1;
 
 		ctx.fill(batchPath);
 		ctx.stroke(batchPath);
 	}
 
-	private computeColor(color: string): string {
-		if (color.startsWith('var(') && color.endsWith(')')) {
-			const varName = color.slice(4, -1);
-			return getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || color;
-		}
-		return color;
-	}
 
-	private applyOpacity(color: string, opacity: number): string {
-		if (opacity === 1) return color;
-
-		const canvas = document.createElement('canvas');
-		const ctx = canvas.getContext('2d')!;
-		ctx.fillStyle = color;
-		const computedColor = ctx.fillStyle;
-
-		if (computedColor.startsWith('#')) {
-			const hex = computedColor.slice(1);
-			const r = parseInt(hex.substring(0, 2), 16);
-			const g = parseInt(hex.substring(2, 4), 16);
-			const b = parseInt(hex.substring(4, 6), 16);
-			return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-		} else if (computedColor.startsWith('rgb(')) {
-			const rgb = computedColor.slice(4, -1);
-			return `rgba(${rgb}, ${opacity})`;
-		}
-
-		return color;
-	}
 }

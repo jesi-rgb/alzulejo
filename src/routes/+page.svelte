@@ -11,6 +11,10 @@
 		polygonSides: number;
 		size: number;
 		spacing: number;
+		contactAngle: number;
+		showPolygons: boolean;
+		showMidpoints: boolean;
+		showRays: boolean;
 		canvasWidth: number;
 		canvasHeight: number;
 	}
@@ -19,8 +23,12 @@
 		mode: "tessellation",
 		tessellationType: "triangle",
 		polygonSides: 3,
-		size: 90,
+		size: 190,
 		spacing: 0,
+		contactAngle: 22.5,
+		showPolygons: true,
+		showMidpoints: false,
+		showRays: true,
 		canvasWidth: 1500,
 		canvasHeight: 800,
 	};
@@ -47,10 +55,11 @@
 
 	const tessellation = new Tessellation({
 		type: "triangle",
-		size: 90,
+		size: 190,
 		width: defaultSettings.canvasWidth,
 		height: defaultSettings.canvasHeight,
 		spacing: 0,
+		contactAngle: 22.5,
 		style: style,
 	});
 
@@ -89,9 +98,9 @@
 
 		// Initialize with the current mode
 		if (settings.mode === "polygon") {
-			canvas.add(polygon);
+			canvas.add(polygon, settings.showMidpoints, settings.showRays, settings.showPolygons);
 		} else {
-			canvas.add(tessellation);
+			canvas.add(tessellation, settings.showPolygons, settings.showMidpoints, settings.showRays);
 		}
 	}
 
@@ -116,9 +125,9 @@
 		canvas.clearRenderables();
 
 		if (newMode === "polygon") {
-			canvas.add(polygon);
+			canvas.add(polygon, settings.showMidpoints, settings.showRays, settings.showPolygons);
 		} else {
-			canvas.add(tessellation);
+			canvas.add(tessellation, settings.showPolygons, settings.showMidpoints, settings.showRays);
 		}
 
 		saveSettings();
@@ -130,9 +139,9 @@
 		canvas.clearRenderables();
 
 		if (settings.mode === "polygon") {
-			canvas.add(polygon);
+			canvas.add(polygon, settings.showMidpoints, settings.showRays, settings.showPolygons);
 		} else {
-			canvas.add(tessellation);
+			canvas.add(tessellation, settings.showPolygons, settings.showMidpoints, settings.showRays);
 		}
 	}
 
@@ -142,6 +151,7 @@
 		// Initialize reactive properties from settings
 		tessellation.size = settings.size;
 		tessellation.spacing = settings.spacing;
+		tessellation.contactAngle = settings.contactAngle;
 		tessellation.type = settings.tessellationType;
 		tessellation.width = settings.canvasWidth;
 		tessellation.height = settings.canvasHeight;
@@ -232,19 +242,78 @@
 					</button>
 				</div>
 
-				<div class="slider-control">
-					<label for="polygon-size">Size: {polygon.radius}</label>
-					<input
-						id="polygon-size"
-						type="range"
-						min="10"
-						max="100"
-						bind:value={polygon.radius}
-						oninput={(e) => {
-							polygon.radius = Number(e.target.value);
-							updateVisualization();
-						}}
-					/>
+				<div class="slider-controls">
+					<div class="slider-control">
+						<label for="polygon-size">Size: {polygon.radius}</label>
+						<input
+							id="polygon-size"
+							type="range"
+							min="10"
+							max="100"
+							bind:value={polygon.radius}
+							oninput={(e) => {
+								polygon.radius = Number(e.target.value);
+								updateVisualization();
+							}}
+						/>
+					</div>
+
+					<div class="slider-control">
+						<label for="polygon-contact-angle"
+							>Contact Angle: {polygon.contactAngle}°</label
+						>
+						<input
+							id="polygon-contact-angle"
+							type="range"
+							min="0"
+							max="90"
+							step="0.5"
+							bind:value={polygon.contactAngle}
+							oninput={(e) => {
+								polygon.contactAngle = Number(e.target.value);
+								updateVisualization();
+							}}
+						/>
+					</div>
+				</div>
+
+				<div class="control-section">
+					<h3>Visibility</h3>
+					<div class="checkbox-group">
+						<label class="checkbox-control">
+							<input
+								type="checkbox"
+								bind:checked={settings.showPolygons}
+								onchange={() => {
+									saveSettings();
+									updateVisualization();
+								}}
+							/>
+							Show Polygons
+						</label>
+						<label class="checkbox-control">
+							<input
+								type="checkbox"
+								bind:checked={settings.showMidpoints}
+								onchange={() => {
+									saveSettings();
+									updateVisualization();
+								}}
+							/>
+							Show Midpoints
+						</label>
+						<label class="checkbox-control">
+							<input
+								type="checkbox"
+								bind:checked={settings.showRays}
+								onchange={() => {
+									saveSettings();
+									updateVisualization();
+								}}
+							/>
+							Show Rays
+						</label>
+					</div>
 				</div>
 
 				{#if polygon}
@@ -300,7 +369,7 @@
 							id="tessellation-size"
 							type="range"
 							min="5"
-							max="80"
+							max="280"
 							bind:value={tessellation.size}
 							oninput={(e) => {
 								tessellation.size = Number(e.target.value);
@@ -324,6 +393,63 @@
 								updateVisualization();
 							}}
 						/>
+					</div>
+
+					<div class="slider-control">
+						<label for="contact-angle"
+							>Contact Angle: {tessellation.contactAngle}°</label
+						>
+						<input
+							id="contact-angle"
+							type="range"
+							min="0"
+							max="90"
+							step="0.5"
+							bind:value={tessellation.contactAngle}
+							oninput={(e) => {
+								tessellation.contactAngle = Number(e.target.value);
+								updateVisualization();
+							}}
+						/>
+					</div>
+				</div>
+
+				<div class="control-section">
+					<h3>Visibility</h3>
+					<div class="checkbox-group">
+						<label class="checkbox-control">
+							<input
+								type="checkbox"
+								bind:checked={settings.showPolygons}
+								onchange={() => {
+									saveSettings();
+									updateVisualization();
+								}}
+							/>
+							Show Polygons
+						</label>
+						<label class="checkbox-control">
+							<input
+								type="checkbox"
+								bind:checked={settings.showMidpoints}
+								onchange={() => {
+									saveSettings();
+									updateVisualization();
+								}}
+							/>
+							Show Midpoints
+						</label>
+						<label class="checkbox-control">
+							<input
+								type="checkbox"
+								bind:checked={settings.showRays}
+								onchange={() => {
+									saveSettings();
+									updateVisualization();
+								}}
+							/>
+							Show Rays
+						</label>
 					</div>
 				</div>
 
@@ -351,10 +477,13 @@
 					settings = { ...defaultSettings };
 					tessellation.size = defaultSettings.size;
 					tessellation.spacing = defaultSettings.spacing;
+					tessellation.contactAngle = defaultSettings.contactAngle;
 					tessellation.type = defaultSettings.tessellationType;
 					polygon.sides = defaultSettings.polygonSides;
 					polygon.radius = defaultSettings.size;
+					polygon.contactAngle = defaultSettings.contactAngle;
 					saveSettings();
+					updateVisualization();
 				}}
 			>
 				Reset to Defaults
@@ -565,6 +694,28 @@
 	.reset-button:hover {
 		background: var(--warning-color-dark, #ff5252);
 		transform: translateY(-1px);
+	}
+
+	.checkbox-group {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	.checkbox-control {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-weight: 500;
+		color: var(--text-primary, #333);
+		cursor: pointer;
+	}
+
+	.checkbox-control input[type="checkbox"] {
+		width: 18px;
+		height: 18px;
+		accent-color: var(--accent-color, #007acc);
+		cursor: pointer;
 	}
 
 	@media (max-width: 768px) {
