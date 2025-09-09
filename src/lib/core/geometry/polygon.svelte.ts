@@ -71,7 +71,6 @@ export class Polygon {
 			edges.push(new Edge(this.vertices[i], this.vertices[j]));
 		}
 
-		const toDegrees = (radians: number) => radians * (180 / Math.PI);
 		return edges;
 	});
 
@@ -309,8 +308,7 @@ export class Polygon {
 
 		if (rays) {
 			ctx.beginPath();
-			for (let i = 0; i < this.rays.length; i++) {
-				const ray = this.rays[i];
+			for (const ray of this.rays) {
 				if (ray.origin) {
 					const endpoint = ray.endpoint;
 					ctx.moveTo(ray.origin.x, ray.origin.y);
