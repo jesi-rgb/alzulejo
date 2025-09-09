@@ -7,7 +7,7 @@
 
 	interface AppSettings {
 		mode: "polygon" | "tessellation";
-		tessellationType: "triangle" | "square" | "hexagon";
+		tessellationType: "triangle" | "square" | "hexagon" | "octagon-square";
 		polygonSides: number;
 		size: number;
 		spacing: number;
@@ -104,7 +104,7 @@
 		}
 	}
 
-	function setTessellationType(type: "triangle" | "square" | "hexagon") {
+	function setTessellationType(type: "triangle" | "square" | "hexagon" | "octagon-square") {
 		tessellation.type = type;
 		settings.tessellationType = type;
 		saveSettings();
@@ -357,6 +357,14 @@
 						onclick={() => setTessellationType("hexagon")}
 					>
 						Hexagon Tiling
+					</button>
+					<button
+						class="button {tessellation.type === 'octagon-square'
+							? 'active'
+							: ''}"
+						onclick={() => setTessellationType("octagon-square")}
+					>
+						Octagon-Square Tiling
 					</button>
 				</div>
 

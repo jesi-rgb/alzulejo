@@ -32,6 +32,16 @@ export class Edge {
 
 		return Math.atan2(dy, dx);
 	});
+
+
+	magnitude = $derived.by(() => {
+		if (!this.start || !this.end) return 0;
+
+		const dx = this.end.x - this.start.x;
+		const dy = this.end.y - this.start.y;
+
+		return Math.sqrt(dx * dx + dy * dy);
+	});
 }
 
 export class Ray {
@@ -71,7 +81,7 @@ export class Ray {
 
 		const dx = edgeStart.x - rayStart.x;
 		const dy = edgeStart.y - rayStart.y;
-		
+
 		const u = (dx * edgeDy - dy * edgeDx) / det;
 		const v = (dx * rayDy - dy * rayDx) / det;
 

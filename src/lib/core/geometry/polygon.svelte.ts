@@ -72,7 +72,6 @@ export class Polygon {
 		}
 
 		const toDegrees = (radians: number) => radians * (180 / Math.PI);
-		console.log(edges.map(edge => toDegrees(edge.angle)))
 		return edges;
 	});
 
@@ -84,6 +83,10 @@ export class Polygon {
 			midpoints.push(this.edges[i].midpoint);
 		}
 		return midpoints;
+	});
+
+	apothem = $derived.by(() => {
+		return new Edge(this.center, this.edges[0].midpoint).magnitude;
 	});
 
 	rays = $derived.by(() => {
@@ -112,11 +115,11 @@ export class Polygon {
 				if (j === i) continue;
 
 				const targetEdge = this.edges[j];
-				
+
 				const intersection1 = ray1.intersectEdge(targetEdge);
 				if (intersection1) {
 					const dist = Math.sqrt(
-						Math.pow(intersection1.x - midpoint.x, 2) + 
+						Math.pow(intersection1.x - midpoint.x, 2) +
 						Math.pow(intersection1.y - midpoint.y, 2)
 					);
 					if (dist < shortestDistance1) {
@@ -128,7 +131,7 @@ export class Polygon {
 				const intersection2 = ray2.intersectEdge(targetEdge);
 				if (intersection2) {
 					const dist = Math.sqrt(
-						Math.pow(intersection2.x - midpoint.x, 2) + 
+						Math.pow(intersection2.x - midpoint.x, 2) +
 						Math.pow(intersection2.y - midpoint.y, 2)
 					);
 					if (dist < shortestDistance2) {
@@ -206,6 +209,47 @@ export class Polygon {
 
 	static hexagon(radius: number = 50, centerX: number = 0, centerY: number = 0): Polygon {
 		return Polygon.regular(6, radius, centerX, centerY);
+	}
+
+	static octagon(radius: number = 50, centerX: number = 0, centerY: number = 0): Polygon {
+		return Polygon.regular(8, radius, centerX, centerY);
+	}
+
+	static dodecagon(radius: number = 50, centerX: number = 0, centerY: number = 0): Polygon {
+		return Polygon.regular(12, radius, centerX, centerY);
+	}
+
+	private static sideLengthToRadius(sides: number, sideLength: number): number {
+		return sideLength / (2 * Math.sin(Math.PI / sides));
+	}
+
+	static regularBySideLength(sides: number, sideLength: number, centerX: number = 0, centerY: number = 0): Polygon {
+		const radius = Polygon.sideLengthToRadius(sides, sideLength);
+		return Polygon.regular(sides, radius, centerX, centerY);
+	}
+
+	static triangleBySideLength(sideLength: number, centerX: number = 0, centerY: number = 0): Polygon {
+		return Polygon.regularBySideLength(3, sideLength, centerX, centerY);
+	}
+
+	static squareBySideLength(sideLength: number, centerX: number = 0, centerY: number = 0): Polygon {
+		return Polygon.regularBySideLength(4, sideLength, centerX, centerY);
+	}
+
+	static pentagonBySideLength(sideLength: number, centerX: number = 0, centerY: number = 0): Polygon {
+		return Polygon.regularBySideLength(5, sideLength, centerX, centerY);
+	}
+
+	static hexagonBySideLength(sideLength: number, centerX: number = 0, centerY: number = 0): Polygon {
+		return Polygon.regularBySideLength(6, sideLength, centerX, centerY);
+	}
+
+	static octagonBySideLength(sideLength: number, centerX: number = 0, centerY: number = 0): Polygon {
+		return Polygon.regularBySideLength(8, sideLength, centerX, centerY);
+	}
+
+	static dodecagonBySideLength(sideLength: number, centerX: number = 0, centerY: number = 0): Polygon {
+		return Polygon.regularBySideLength(12, sideLength, centerX, centerY);
 	}
 
 

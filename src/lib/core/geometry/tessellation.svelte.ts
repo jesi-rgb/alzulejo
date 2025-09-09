@@ -2,7 +2,7 @@ import { Polygon } from './polygon.svelte';
 import { Style } from './style.svelte';
 import { Canvas } from '../../render/canvas.svelte';
 
-type TessellationType = 'triangle' | 'square' | 'hexagon';
+type TessellationType = 'triangle' | 'square' | 'hexagon' | 'octagon-square';
 
 interface TessellationConfig {
 	type: TessellationType;
@@ -50,6 +50,8 @@ export class Tessellation {
 				return this.generateSquareTessellation();
 			case 'hexagon':
 				return this.generateHexagonTessellation();
+			case 'octagon-square':
+				return this.generateOctagonSquareTessellation();
 			default:
 				return [];
 		}
@@ -123,18 +125,19 @@ export class Tessellation {
 
 	private generateHexagonTessellation(): Polygon[] {
 		const polygons: Polygon[] = [];
-		const hexWidth = this.size * 2 + this.spacing;
-		const hexHeight = this.size * Math.sqrt(3) + this.spacing;
+		const width = this.size * Math.sqrt(3);
+		const height = this.size * 1.5;
 
-		let rowIndex = 0;
-		for (let y = this.size; y < this.height; y += hexHeight * 0.75) {
-			const offsetX = (rowIndex % 2) * (hexWidth * 0.5);
+		let rowIndex = 0, colIndex = 0;
 
-			for (let x = this.size + offsetX; x < this.width; x += hexWidth) {
-				const polygon = Polygon.hexagon(this.size, x, y);
+		for (let y = 0; y < this.height + height; y += height + this.spacing) {
+			colIndex = 0;
+			for (let x = 0; x < this.width + width; x += width + this.spacing) {
+				const offsetX = rowIndex % 2 === 0 ? 0 : width * 0.5;
+				const polygon = Polygon.hexagon(this.size, x + offsetX, y);
 				polygon.contactAngle = this.contactAngle;
-				if (this.style) polygon.style = this.style;
 				polygons.push(polygon);
+				colIndex++;
 			}
 			rowIndex++;
 		}
@@ -171,6 +174,71 @@ export class Tessellation {
 		this.polygons.forEach(polygon => polygon.draw(ctx));
 	}
 
+
+	private generateOctagonSquareTessellation(): Polygon[] {
+		const polygons: Polygon[] = [];
+
+		// For 4.8.8 tiling: each vertex has square + octagon + octagon
+		// Regular octagon inscribed radius to edge length ratio is 1 / (2 * tan(π/8))
+		// For proper fit: octagon_radius = square_size / (1 + sqrt(2))
+		const octagonRadius = this.size;
+		const octagonSideLength = Polygon.regular(8, this.size).edges[0].magnitude;
+		const squareSize = octagonSideLength;
+
+		// Calculate spacing between pattern units
+		const octagonWidth = octagonRadius * 2 * Math.cos(Math.PI / 8);
+		const octagonApothem = Polygon.octagon(octagonRadius).apothem;
+
+		const stepX = octagonWidth + squareSize + this.spacing;
+		const stepY = octagonApothem * 2 + squareSize + this.spacing;
+
+		let rowIndex = 0;
+		for (let y = 0; y < this.height + stepY; y += stepY) {
+			let colIndex = 0;
+			for (let x = 0; x < this.width + stepX; x += stepX) {
+				// Place octagon at the center
+				const octagon = Polygon.octagon(octagonRadius, x + stepX / 2, y + stepY / 2).rotate(Math.PI / 8);
+				octagon.contactAngle = this.contactAngle;
+				if (this.style1) octagon.style = this.style1;
+				else if (this.style) octagon.style = this.style;
+				polygons.push(octagon);
+
+				// Place squares around the octagon
+				// Top square
+				const topSquare = Polygon.squareBySideLength(octagonSideLength, x + stepX / 2, y).rotate(Math.PI / 4);
+				topSquare.contactAngle = this.contactAngle;
+				if (this.style2) topSquare.style = this.style2;
+				else if (this.style) topSquare.style = this.style;
+				polygons.push(topSquare);
+
+				// // Bottom square
+				// const bottomSquare = Polygon.square(squareSize / 2, x + stepX / 2, y + stepY - squareSize / 4);
+				// bottomSquare.contactAngle = this.contactAngle;
+				// if (this.style2) bottomSquare.style = this.style2;
+				// else if (this.style) bottomSquare.style = this.style;
+				// polygons.push(bottomSquare);
+				//
+				// Left square
+				const leftSquare = Polygon.squareBySideLength(octagonSideLength, x + stepX, y + stepY / 2).rotate(Math.PI / 4);
+				leftSquare.contactAngle = this.contactAngle;
+				if (this.style2) leftSquare.style = this.style2;
+				else if (this.style) leftSquare.style = this.style;
+				polygons.push(leftSquare);
+				//
+				// // Right square
+				// const rightSquare = Polygon.square(squareSize / 2, x + stepX - squareSize / 4, y + stepY / 2);
+				// rightSquare.contactAngle = this.contactAngle;
+				// if (this.style2) rightSquare.style = this.style2;
+				// else if (this.style) rightSquare.style = this.style;
+				// polygons.push(rightSquare);
+
+				colIndex++;
+			}
+			rowIndex++;
+		}
+
+		return polygons;
+	}
 
 	private groupPolygonsByStyle(): Map<string, Polygon[]> {
 		const groups = new Map<string, Polygon[]>();
