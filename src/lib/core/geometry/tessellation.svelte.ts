@@ -196,41 +196,29 @@ export class Tessellation {
 		for (let y = 0; y < this.height + stepY; y += stepY) {
 			let colIndex = 0;
 			for (let x = 0; x < this.width + stepX; x += stepX) {
-				// Place octagon at the center
 				const octagon = Polygon.octagon(octagonRadius, x + stepX / 2, y + stepY / 2).rotate(Math.PI / 8);
 				octagon.contactAngle = this.contactAngle;
 				if (this.style1) octagon.style = this.style1;
 				else if (this.style) octagon.style = this.style;
 				polygons.push(octagon);
 
-				// Place squares around the octagon
-				// Top square
+				const octagon2 = Polygon.octagon(octagonRadius, x + stepX, y + stepY).rotate(Math.PI / 8);
+				octagon.contactAngle = this.contactAngle;
+				if (this.style1) octagon.style = this.style1;
+				else if (this.style) octagon.style = this.style;
+				polygons.push(octagon2);
+
 				const topSquare = Polygon.squareBySideLength(octagonSideLength, x + stepX / 2, y).rotate(Math.PI / 4);
 				topSquare.contactAngle = this.contactAngle;
 				if (this.style2) topSquare.style = this.style2;
 				else if (this.style) topSquare.style = this.style;
 				polygons.push(topSquare);
 
-				// // Bottom square
-				// const bottomSquare = Polygon.square(squareSize / 2, x + stepX / 2, y + stepY - squareSize / 4);
-				// bottomSquare.contactAngle = this.contactAngle;
-				// if (this.style2) bottomSquare.style = this.style2;
-				// else if (this.style) bottomSquare.style = this.style;
-				// polygons.push(bottomSquare);
-				//
-				// Left square
 				const leftSquare = Polygon.squareBySideLength(octagonSideLength, x + stepX, y + stepY / 2).rotate(Math.PI / 4);
 				leftSquare.contactAngle = this.contactAngle;
 				if (this.style2) leftSquare.style = this.style2;
 				else if (this.style) leftSquare.style = this.style;
 				polygons.push(leftSquare);
-				//
-				// // Right square
-				// const rightSquare = Polygon.square(squareSize / 2, x + stepX - squareSize / 4, y + stepY / 2);
-				// rightSquare.contactAngle = this.contactAngle;
-				// if (this.style2) rightSquare.style = this.style2;
-				// else if (this.style) rightSquare.style = this.style;
-				// polygons.push(rightSquare);
 
 				colIndex++;
 			}
