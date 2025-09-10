@@ -18,14 +18,14 @@
 	}
 
 	const defaultSettings: AppSettings = {
-		tessellationType: "triangle",
-		size: 190,
+		tessellationType: "octagon-square",
+		size: 60,
 		spacing: 0,
-		contactAngle: 22.5,
-		showPolygons: true,
+		contactAngle: 45,
+		showPolygons: false,
 		showMidpoints: false,
-		showRays: true,
-		showRayPairs: false,
+		showRays: false,
+		showRayPairs: true,
 		showIntersectionPoints: false,
 	};
 
@@ -33,6 +33,7 @@
 	let canvas = $state<Canvas>();
 	let canvasElement: HTMLCanvasElement;
 	let resizeObserver: ResizeObserver;
+	let debounceTimer: ReturnType<typeof setTimeout>;
 
 	const style: Style = {
 		fill: "var(--accent)",
@@ -117,7 +118,7 @@
 	) {
 		tessellation.type = type;
 		settings.tessellationType = type;
-		saveSettings();
+		// saveSettings();
 		updateVisualization();
 	}
 
@@ -135,9 +136,16 @@
 		);
 	}
 
-	onMount(() => {
-		settings = loadSettings();
+	function debouncedUpdateVisualization() {
+		if (debounceTimer) {
+			clearTimeout(debounceTimer);
+		}
+		debounceTimer = setTimeout(() => {
+			updateVisualization();
+		}, 600);
+	}
 
+	onMount(() => {
 		tessellation.size = settings.size;
 		tessellation.spacing = settings.spacing;
 		tessellation.contactAngle = settings.contactAngle;
@@ -225,7 +233,7 @@
 							bind:value={tessellation.size}
 							oninput={(e) => {
 								tessellation.size = Number(e.target.value);
-								updateVisualization();
+								debouncedUpdateVisualization();
 							}}
 						/>
 					</div>
@@ -242,7 +250,7 @@
 							bind:value={tessellation.spacing}
 							oninput={(e) => {
 								tessellation.spacing = Number(e.target.value);
-								updateVisualization();
+								debouncedUpdateVisualization();
 							}}
 						/>
 					</div>
@@ -262,7 +270,7 @@
 								tessellation.contactAngle = Number(
 									e.target.value,
 								);
-								updateVisualization();
+								debouncedUpdateVisualization();
 							}}
 						/>
 					</div>

@@ -113,7 +113,9 @@ export class Polygon {
 			const ray2Angle = edgeAngle + Math.PI / 2 - contactAngleRad;
 
 			const ray1 = new Ray(midpoint, ray1Angle, 200);
+			ray1.edgeIndex = i;
 			const ray2 = new Ray(midpoint, ray2Angle, 200);
+			ray2.edgeIndex = i;
 
 			let shortestIntersection1: Point | null = null;
 			let shortestDistance1 = Infinity;
@@ -125,7 +127,7 @@ export class Polygon {
 
 				const targetEdge = this.edges[j];
 
-				const intersection1 = ray1.intersectEdge(targetEdge);
+				const intersection1 = ray1.intersect(targetEdge);
 				if (intersection1) {
 					const dist = Math.sqrt(
 						Math.pow(intersection1.x - midpoint.x, 2) +
@@ -137,7 +139,7 @@ export class Polygon {
 					}
 				}
 
-				const intersection2 = ray2.intersectEdge(targetEdge);
+				const intersection2 = ray2.intersect(targetEdge);
 				if (intersection2) {
 					const dist = Math.sqrt(
 						Math.pow(intersection2.x - midpoint.x, 2) +
@@ -176,6 +178,13 @@ export class Polygon {
 
 				if (!ray1.origin || !ray2.origin) continue;
 
+				// // Early exit: skip rays that can't possibly intersect based on max reach
+				const maxDistance = ray1.length + ray2.length;
+				const originsDistanceSquared =
+					Math.pow(ray2.origin.x - ray1.origin.x, 2) +
+					Math.pow(ray2.origin.y - ray1.origin.y, 2);
+				if (originsDistanceSquared > maxDistance * maxDistance) continue;
+
 				const angleDiff = Math.abs(ray1.angle - ray2.angle);
 				const isOpposite = Math.abs(Math.abs(angleDiff - Math.PI)) < 0.1 + EPSILON;
 
@@ -200,14 +209,15 @@ export class Polygon {
 				// Check if rays intersect
 				const intersection = ray1.intersect(ray2);
 				if (intersection) {
-					const distAP = Math.sqrt(
+					const distAPSquared =
 						Math.pow(intersection.x - ray1.origin.x, 2) +
-						Math.pow(intersection.y - ray1.origin.y, 2)
-					);
-					const distPD = Math.sqrt(
+						Math.pow(intersection.y - ray1.origin.y, 2);
+					const distPDSquared =
 						Math.pow(intersection.x - ray2.origin.x, 2) +
-						Math.pow(intersection.y - ray2.origin.y, 2)
-					);
+						Math.pow(intersection.y - ray2.origin.y, 2);
+
+					const distAP = Math.sqrt(distAPSquared);
+					const distPD = Math.sqrt(distPDSquared);
 
 					// if these were let in, because we want the 
 					// smallest numbers, they would score the highest 

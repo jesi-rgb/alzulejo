@@ -86,6 +86,7 @@ export class Ray implements Intersectable {
 	origin = $state<Point>();
 	direction = $state<number>(0);
 	length = $state<number>(100);
+	edgeIndex?: number;
 
 	constructor(origin: Point, direction: number, length: number = 100) {
 		this.origin = origin;

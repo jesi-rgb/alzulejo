@@ -195,9 +195,9 @@ export class Tessellation {
 		const stepY = octagonApothem * 2 + squareSize + this.spacing;
 
 		let rowIndex = 0;
-		for (let y = 0; y < this.height + stepY; y += stepY) {
+		for (let y = -stepY; y < this.height + stepY; y += stepY) {
 			let colIndex = 0;
-			for (let x = 0; x < this.width + stepX; x += stepX) {
+			for (let x = -stepX; x < this.width + stepX; x += stepX) {
 				const octagon = Polygon.octagon(octagonRadius, x + stepX / 2, y + stepY / 2).rotate(Math.PI / 8);
 				octagon.contactAngle = this.contactAngle;
 				if (this.style1) octagon.style = this.style1;
