@@ -37,7 +37,7 @@
 	let debounceTimer: ReturnType<typeof setTimeout>;
 
 	const style: Style = {
-		fill: "var(--primary)",
+		fill: "var(--base-300)",
 		fillOpacity: 0.9,
 		stroke: "var(--primary)",
 		strokeWidth: 1.0,
@@ -51,7 +51,6 @@
 		width: 400,
 		height: 300,
 		contactAngle: 22.5,
-		motifColor: "var(--primary)",
 		style: style,
 	});
 
@@ -144,7 +143,7 @@
 		}
 		debounceTimer = setTimeout(() => {
 			updateVisualization();
-		}, 300);
+		}, 400);
 	}
 
 	onMount(() => {
@@ -239,8 +238,6 @@
 							}}
 						/>
 					</div>
-
-
 
 					<div class="slider-control">
 						<label for="contact-angle"
@@ -365,7 +362,6 @@
 		background-color: var(--base-100);
 		border: 2px solid var(--primary);
 		border-radius: 0.5rem;
-		padding: 1rem;
 		display: flex;
 		overflow: hidden;
 	}
