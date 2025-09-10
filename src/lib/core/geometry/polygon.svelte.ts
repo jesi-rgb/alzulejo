@@ -167,6 +167,7 @@ export class Polygon {
 		if (this.rays.length < 2) return [];
 
 		const allPairs: RayPair[] = [];
+		const EPSILON = 0.1;
 
 		for (let i = 0; i < this.rays.length; i++) {
 			for (let j = i + 1; j < this.rays.length; j++) {
@@ -175,9 +176,8 @@ export class Polygon {
 
 				if (!ray1.origin || !ray2.origin) continue;
 
-				// Check if rays are collinear and point towards each other
 				const angleDiff = Math.abs(ray1.angle - ray2.angle);
-				const isOpposite = Math.abs(angleDiff - Math.PI) < 0.1;
+				const isOpposite = Math.abs(Math.abs(angleDiff - Math.PI)) < 0.1 + EPSILON;
 
 				if (isOpposite) {
 					// Collinear opposite rays: cost is distance between origins (AD)
@@ -209,8 +209,11 @@ export class Polygon {
 						Math.pow(intersection.y - ray2.origin.y, 2)
 					);
 
-
+					// if these were let in, because we want the 
+					// smallest numbers, they would score the highest 
+					// and display nothing
 					if (distAP + distPD == 0) continue;
+
 					allPairs.push({
 						ray1,
 						ray2,
@@ -223,7 +226,10 @@ export class Polygon {
 			}
 		}
 
-		allPairs.sort((a, b) => a.totalLength - b.totalLength);
+		allPairs.sort((a, b) => {
+			const diff = a.totalLength - b.totalLength;
+			return Math.abs(diff) < EPSILON ? 0 : diff;
+		});
 
 		const selectedPairs: RayPair[] = [];
 		const usedRays = new Set<Ray>();
@@ -381,30 +387,6 @@ export class Polygon {
 			this.color(ctx);
 		}
 
-		if (midpoints) {
-			ctx.beginPath();
-			for (let i = 0; i < this.midpoints.length; i++) {
-				const midpoint = this.midpoints[i];
-				ctx.moveTo(midpoint.x + 2, midpoint.y);
-				ctx.ellipse(midpoint.x, midpoint.y, 2, 2, 0, 0, Math.PI * 2);
-			}
-			ctx.fillStyle = 'red';
-			ctx.fill();
-		}
-
-		if (rays && !showMotif) {
-			// Show individual rays (original behavior)
-			ctx.beginPath();
-			for (const ray of this.rays) {
-				if (ray.origin) {
-					const endpoint = ray.endpoint;
-					ctx.moveTo(ray.origin.x, ray.origin.y);
-					ctx.lineTo(endpoint.x, endpoint.y);
-				}
-			}
-			ctx.strokeStyle = 'blue';
-			ctx.stroke();
-		}
 
 		if (showMotif) {
 			// Show clipped ray pairs (Islamic motif)
@@ -428,6 +410,31 @@ export class Polygon {
 				ctx.stroke();
 			}
 			ctx.restore();
+		}
+
+		if (midpoints) {
+			ctx.beginPath();
+			for (let i = 0; i < this.midpoints.length; i++) {
+				const midpoint = this.midpoints[i];
+				ctx.moveTo(midpoint.x + 2, midpoint.y);
+				ctx.ellipse(midpoint.x, midpoint.y, 4, 4, 0, 0, Math.PI * 2);
+			}
+			ctx.fillStyle = 'red';
+			ctx.fill();
+		}
+
+		if (rays && !showMotif) {
+			// Show individual rays (original behavior)
+			ctx.beginPath();
+			for (const ray of this.rays) {
+				if (ray.origin) {
+					const endpoint = ray.endpoint;
+					ctx.moveTo(ray.origin.x, ray.origin.y);
+					ctx.lineTo(endpoint.x, endpoint.y);
+				}
+			}
+			ctx.strokeStyle = 'blue';
+			ctx.stroke();
 		}
 
 		if (showIntersectionPoints) {

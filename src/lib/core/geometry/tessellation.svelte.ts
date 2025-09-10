@@ -130,9 +130,9 @@ export class Tessellation {
 
 		let rowIndex = 0, colIndex = 0;
 
-		for (let y = 0; y < this.height + height; y += height + this.spacing) {
+		for (let y = 0; y < this.height; y += height + this.spacing) {
 			colIndex = 0;
-			for (let x = 0; x < this.width + width; x += width + this.spacing) {
+			for (let x = 0; x < this.width; x += width + this.spacing) {
 				const offsetX = rowIndex % 2 === 0 ? 0 : width * 0.5;
 				const polygon = Polygon.hexagon(this.size, x + offsetX, y);
 				polygon.contactAngle = this.contactAngle;

@@ -346,24 +346,6 @@
 					)}
 				</p>
 			</div>
-
-			<div class="control-section">
-				<button
-					class="reset-button"
-					onclick={() => {
-						settings = { ...defaultSettings };
-						tessellation.size = defaultSettings.size;
-						tessellation.spacing = defaultSettings.spacing;
-						tessellation.contactAngle =
-							defaultSettings.contactAngle;
-						tessellation.type = defaultSettings.tessellationType;
-						saveSettings();
-						updateVisualization();
-					}}
-				>
-					Reset to Defaults
-				</button>
-			</div>
 		</div>
 	</div>
 </div>
