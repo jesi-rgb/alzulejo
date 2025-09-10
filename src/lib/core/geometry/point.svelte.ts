@@ -8,7 +8,13 @@ export class Point {
 	}
 }
 
-export class Edge {
+interface Intersectable {
+	start: Point | undefined;
+	end: Point | undefined;
+	intersect(other: Intersectable): Point | null;
+}
+
+export class Edge implements Intersectable {
 	start = $state<Point>();
 	end = $state<Point>();
 
@@ -42,9 +48,41 @@ export class Edge {
 
 		return Math.sqrt(dx * dx + dy * dy);
 	});
+
+	intersect(other: Intersectable): Point | null {
+		if (!this.start || !this.end || !other.start || !other.end) return null;
+
+		const line1Start = this.start;
+		const line1End = this.end;
+		const line2Start = other.start;
+		const line2End = other.end;
+
+		const line1Dx = line1End.x - line1Start.x;
+		const line1Dy = line1End.y - line1Start.y;
+		const line2Dx = line2End.x - line2Start.x;
+		const line2Dy = line2End.y - line2Start.y;
+
+		const det = line1Dx * line2Dy - line1Dy * line2Dx;
+		if (Math.abs(det) < 1e-10) return null;
+
+		const dx = line2Start.x - line1Start.x;
+		const dy = line2Start.y - line1Start.y;
+
+		const u = (dx * line2Dy - dy * line2Dx) / det;
+		const v = (dx * line1Dy - dy * line1Dx) / det;
+
+		if (u >= 0 && v >= 0 && v <= 1) {
+			return new Point(
+				line1Start.x + u * line1Dx,
+				line1Start.y + u * line1Dy
+			);
+		}
+
+		return null;
+	}
 }
 
-export class Ray {
+export class Ray implements Intersectable {
 	origin = $state<Point>();
 	direction = $state<number>(0);
 	length = $state<number>(100);
@@ -55,6 +93,16 @@ export class Ray {
 		this.length = length;
 	}
 
+	get start(): Point | undefined {
+		return this.origin;
+	}
+
+	get end(): Point | undefined {
+		return this.endpoint;
+	}
+
+	angle = $derived(Math.atan2(this.direction, 1));
+
 	endpoint = $derived.by(() => {
 		if (!this.origin) return new Point(0, 0);
 
@@ -63,35 +111,39 @@ export class Ray {
 		return new Point(x, y);
 	});
 
-	intersectEdge(edge: Edge): Point | null {
-		if (!this.origin || !edge.start || !edge.end) return null;
+	intersect(other: Intersectable): Point | null {
+		if (!this.start || !this.end || !other.start || !other.end) return null;
 
-		const rayStart = this.origin;
-		const rayEnd = this.endpoint;
-		const edgeStart = edge.start;
-		const edgeEnd = edge.end;
+		const line1Start = this.start;
+		const line1End = this.end;
+		const line2Start = other.start;
+		const line2End = other.end;
 
-		const rayDx = rayEnd.x - rayStart.x;
-		const rayDy = rayEnd.y - rayStart.y;
-		const edgeDx = edgeEnd.x - edgeStart.x;
-		const edgeDy = edgeEnd.y - edgeStart.y;
+		const line1Dx = line1End.x - line1Start.x;
+		const line1Dy = line1End.y - line1Start.y;
+		const line2Dx = line2End.x - line2Start.x;
+		const line2Dy = line2End.y - line2Start.y;
 
-		const det = rayDx * edgeDy - rayDy * edgeDx;
+		const det = line1Dx * line2Dy - line1Dy * line2Dx;
 		if (Math.abs(det) < 1e-10) return null;
 
-		const dx = edgeStart.x - rayStart.x;
-		const dy = edgeStart.y - rayStart.y;
+		const dx = line2Start.x - line1Start.x;
+		const dy = line2Start.y - line1Start.y;
 
-		const u = (dx * edgeDy - dy * edgeDx) / det;
-		const v = (dx * rayDy - dy * rayDx) / det;
+		const u = (dx * line2Dy - dy * line2Dx) / det;
+		const v = (dx * line1Dy - dy * line1Dx) / det;
 
 		if (u >= 0 && v >= 0 && v <= 1) {
 			return new Point(
-				rayStart.x + u * rayDx,
-				rayStart.y + u * rayDy
+				line1Start.x + u * line1Dx,
+				line1Start.y + u * line1Dy
 			);
 		}
 
 		return null;
+	}
+
+	intersectEdge(edge: Edge): Point | null {
+		return this.intersect(edge);
 	}
 }

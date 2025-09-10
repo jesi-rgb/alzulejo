@@ -2,12 +2,23 @@ import type { Style } from './style.svelte';
 import { Point, Edge, Ray } from './point.svelte';
 import { Canvas } from '../../render/canvas.svelte';
 
+
 interface PolygonConfig {
 	sides: number;
 	radius?: number;
 	centerX?: number;
 	centerY?: number;
 	style?: Style;
+}
+
+interface RayPair {
+	ray1: Ray;
+	ray2: Ray;
+	totalLength: number;
+	connectionLength: number;
+	intersectionPoint: Point;
+	clippedRay1: Ray; // A to P
+	clippedRay2: Ray; // P to D
 }
 
 export class Polygon {
@@ -152,6 +163,45 @@ export class Polygon {
 		return rays;
 	});
 
+
+	rayPairs = $derived.by(() => {
+		if (this.rays.length < 2) return [];
+
+		// Generate all possible pairs of rays
+		const allPairs: RayPair[] = [];
+		for (let i = 0; i < this.rays.length; i++) {
+			for (let j = i + 1; j < this.rays.length; j++) {
+				const ray1 = this.rays[i];
+				const ray2 = this.rays[j];
+
+				if (!ray1.origin || !ray2.origin) continue;
+
+				// Check if rays are collinear and point towards each other
+				const ray1Angle = ray1.angle;
+				const ray2Angle = ray2.angle;
+
+
+			}
+		}
+
+		// // Sort pairs by connection length (cost criterion - sum of AP + DP)
+		// allPairs.sort((a, b) => a.connectionLength - b.connectionLength);
+		//
+		// // Greedy selection: pick shortest connections without reusing rays
+		// const selectedPairs: RayPair[] = [];
+		// const usedRays = new Set<Ray>();
+		//
+		// for (const pair of allPairs) {
+		// 	if (!usedRays.has(pair.ray1) && !usedRays.has(pair.ray2)) {
+		// 		selectedPairs.push(pair);
+		// 		usedRays.add(pair.ray1);
+		// 		usedRays.add(pair.ray2);
+		// 	}
+		// }
+
+		return allPairs;
+	});
+
 	constructor(verticesOrConfig: Point[] | PolygonConfig) {
 		if (Array.isArray(verticesOrConfig)) {
 			this._manualVertices = verticesOrConfig;
@@ -162,7 +212,6 @@ export class Polygon {
 			this.centerX = centerX;
 			this.centerY = centerY;
 			this.style = verticesOrConfig.style;
-
 		}
 	}
 
@@ -282,7 +331,7 @@ export class Polygon {
 		return inside;
 	}
 
-	draw(ctx: CanvasRenderingContext2D, midpoints: boolean = false, rays: boolean = true, showPolygon: boolean = true): void {
+	draw(ctx: CanvasRenderingContext2D, midpoints: boolean = false, rays: boolean = true, showPolygon: boolean = true, showMotif: boolean = false): void {
 		if (this.vertices.length < 2) return;
 
 		if (showPolygon) {
@@ -306,7 +355,8 @@ export class Polygon {
 			ctx.fill();
 		}
 
-		if (rays) {
+		if (rays && !showMotif) {
+			// Show individual rays (original behavior)
 			ctx.beginPath();
 			for (const ray of this.rays) {
 				if (ray.origin) {
@@ -317,6 +367,30 @@ export class Polygon {
 			}
 			ctx.strokeStyle = 'blue';
 			ctx.stroke();
+		}
+
+		if (showMotif) {
+			// Show clipped ray pairs (Islamic motif)
+			ctx.save();
+			ctx.strokeStyle = 'purple';
+			ctx.lineWidth = 2;
+
+			for (const pair of this.rayPairs) {
+				if (!pair.clippedRay1.origin || !pair.clippedRay2.origin) continue;
+
+				ctx.beginPath();
+
+				// Draw clipped ray1: A to P
+				ctx.moveTo(pair.clippedRay1.origin.x, pair.clippedRay1.origin.y);
+				ctx.lineTo(pair.clippedRay1.endpoint.x, pair.clippedRay1.endpoint.y);
+
+				// Draw clipped ray2: P to D  
+				ctx.moveTo(pair.clippedRay2.origin.x, pair.clippedRay2.origin.y);
+				ctx.lineTo(pair.clippedRay2.endpoint.x, pair.clippedRay2.endpoint.y);
+
+				ctx.stroke();
+			}
+			ctx.restore();
 		}
 	}
 
