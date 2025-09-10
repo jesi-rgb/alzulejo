@@ -202,8 +202,8 @@ export class Tessellation {
 				else if (this.style) octagon.style = this.style;
 				polygons.push(octagon);
 
-				const octagon2 = Polygon.octagon(octagonRadius, x + stepX, y + stepY).rotate(Math.PI / 8);
-				octagon.contactAngle = this.contactAngle;
+				const octagon2 = Polygon.octagon(octagonRadius, x + stepX, y - stepY).rotate(Math.PI / 8);
+				octagon2.contactAngle = this.contactAngle;
 				if (this.style1) octagon.style = this.style1;
 				else if (this.style) octagon.style = this.style;
 				polygons.push(octagon2);
