@@ -146,4 +146,11 @@ export class Ray implements Intersectable {
 	intersectEdge(edge: Edge): Point | null {
 		return this.intersect(edge);
 	}
+
+	static rayFromEdge(edge: Edge): Ray {
+		if (!edge.start || !edge.end) return new Ray(new Point(0, 0), 0);
+
+		const ray = new Ray(edge.start, edge.angle, edge.magnitude);
+		return ray;
+	}
 }

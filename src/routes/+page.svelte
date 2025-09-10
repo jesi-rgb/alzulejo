@@ -14,6 +14,7 @@
 		showMidpoints: boolean;
 		showRays: boolean;
 		showRayPairs: boolean;
+		showIntersectionPoints: boolean;
 	}
 
 	const defaultSettings: AppSettings = {
@@ -25,6 +26,7 @@
 		showMidpoints: false,
 		showRays: true,
 		showRayPairs: false,
+		showIntersectionPoints: false,
 	};
 
 	let settings = $state<AppSettings>({ ...defaultSettings });
@@ -90,6 +92,7 @@
 			settings.showMidpoints,
 			settings.showRays,
 			settings.showRayPairs,
+			settings.showIntersectionPoints,
 		);
 	}
 
@@ -128,6 +131,7 @@
 			settings.showMidpoints,
 			settings.showRays,
 			settings.showRayPairs,
+			settings.showIntersectionPoints,
 		);
 	}
 
@@ -311,6 +315,17 @@
 							}}
 						/>
 						Show Motif
+					</label>
+					<label class="checkbox-control">
+						<input
+							type="checkbox"
+							bind:checked={settings.showIntersectionPoints}
+							onchange={() => {
+								saveSettings();
+								updateVisualization();
+							}}
+						/>
+						Show Intersection Points
 					</label>
 				</div>
 			</div>

@@ -15,7 +15,6 @@ interface RayPair {
 	ray1: Ray;
 	ray2: Ray;
 	totalLength: number;
-	connectionLength: number;
 	intersectionPoint: Point;
 	clippedRay1: Ray; // A to P
 	clippedRay2: Ray; // P to D
@@ -167,8 +166,8 @@ export class Polygon {
 	rayPairs = $derived.by(() => {
 		if (this.rays.length < 2) return [];
 
-		// Generate all possible pairs of rays
 		const allPairs: RayPair[] = [];
+
 		for (let i = 0; i < this.rays.length; i++) {
 			for (let j = i + 1; j < this.rays.length; j++) {
 				const ray1 = this.rays[i];
@@ -177,29 +176,67 @@ export class Polygon {
 				if (!ray1.origin || !ray2.origin) continue;
 
 				// Check if rays are collinear and point towards each other
-				const ray1Angle = ray1.angle;
-				const ray2Angle = ray2.angle;
+				const angleDiff = Math.abs(ray1.angle - ray2.angle);
+				const isOpposite = Math.abs(angleDiff - Math.PI) < 0.1;
+
+				if (isOpposite) {
+					// Collinear opposite rays: cost is distance between origins (AD)
+					const originsDistance = Math.sqrt(
+						Math.pow(ray2.origin.x - ray1.origin.x, 2) +
+						Math.pow(ray2.origin.y - ray1.origin.y, 2)
+					);
+
+					allPairs.push({
+						ray1,
+						ray2,
+						totalLength: originsDistance,
+						intersectionPoint: ray1.origin,
+						clippedRay1: ray1,
+						clippedRay2: ray2
+					});
+					continue;
+				}
+
+				// Check if rays intersect
+				const intersection = ray1.intersect(ray2);
+				if (intersection) {
+					const distAP = Math.sqrt(
+						Math.pow(intersection.x - ray1.origin.x, 2) +
+						Math.pow(intersection.y - ray1.origin.y, 2)
+					);
+					const distPD = Math.sqrt(
+						Math.pow(intersection.x - ray2.origin.x, 2) +
+						Math.pow(intersection.y - ray2.origin.y, 2)
+					);
 
 
+					if (distAP + distPD == 0) continue;
+					allPairs.push({
+						ray1,
+						ray2,
+						totalLength: distAP + distPD,
+						intersectionPoint: intersection,
+						clippedRay1: Ray.rayFromEdge(new Edge(ray1.origin, intersection)),
+						clippedRay2: Ray.rayFromEdge(new Edge(ray2.origin, intersection))
+					});
+				}
 			}
 		}
 
-		// // Sort pairs by connection length (cost criterion - sum of AP + DP)
-		// allPairs.sort((a, b) => a.connectionLength - b.connectionLength);
-		//
-		// // Greedy selection: pick shortest connections without reusing rays
-		// const selectedPairs: RayPair[] = [];
-		// const usedRays = new Set<Ray>();
-		//
-		// for (const pair of allPairs) {
-		// 	if (!usedRays.has(pair.ray1) && !usedRays.has(pair.ray2)) {
-		// 		selectedPairs.push(pair);
-		// 		usedRays.add(pair.ray1);
-		// 		usedRays.add(pair.ray2);
-		// 	}
-		// }
+		allPairs.sort((a, b) => a.totalLength - b.totalLength);
 
-		return allPairs;
+		const selectedPairs: RayPair[] = [];
+		const usedRays = new Set<Ray>();
+
+		for (const pair of allPairs) {
+			if (!usedRays.has(pair.ray1) && !usedRays.has(pair.ray2)) {
+				selectedPairs.push(pair);
+				usedRays.add(pair.ray1);
+				usedRays.add(pair.ray2);
+			}
+		}
+
+		return selectedPairs;
 	});
 
 	constructor(verticesOrConfig: Point[] | PolygonConfig) {
@@ -331,7 +368,7 @@ export class Polygon {
 		return inside;
 	}
 
-	draw(ctx: CanvasRenderingContext2D, midpoints: boolean = false, rays: boolean = true, showPolygon: boolean = true, showMotif: boolean = false): void {
+	draw(ctx: CanvasRenderingContext2D, midpoints: boolean = false, rays: boolean = true, showPolygon: boolean = true, showMotif: boolean = false, showIntersectionPoints: boolean = false): void {
 		if (this.vertices.length < 2) return;
 
 		if (showPolygon) {
@@ -390,6 +427,19 @@ export class Polygon {
 
 				ctx.stroke();
 			}
+			ctx.restore();
+		}
+
+		if (showIntersectionPoints) {
+			ctx.save();
+			ctx.fillStyle = 'orange';
+			ctx.beginPath();
+			for (const pair of this.rayPairs) {
+				const point = pair.intersectionPoint;
+				ctx.moveTo(point.x + 3, point.y);
+				ctx.ellipse(point.x, point.y, 3, 3, 0, 0, Math.PI * 2);
+			}
+			ctx.fill();
 			ctx.restore();
 		}
 	}

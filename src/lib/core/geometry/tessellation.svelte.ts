@@ -153,7 +153,7 @@ export class Tessellation {
 
 	draw(ctx: CanvasRenderingContext2D, showPolygons: boolean = true,
 		showMidpoints: boolean = false,
-		showRays: boolean = false, showMotif: boolean = true): void {
+		showRays: boolean = false, showMotif: boolean = true, showIntersectionPoints: boolean = false): void {
 		if (this.polygons.length === 0) return;
 
 		if (showPolygons) {
@@ -164,9 +164,9 @@ export class Tessellation {
 			}
 		}
 
-		if (showMidpoints || showRays || showMotif) {
+		if (showMidpoints || showRays || showMotif || showIntersectionPoints) {
 			for (const polygon of this.polygons) {
-				polygon.draw(ctx, showMidpoints, showRays, false, showMotif);
+				polygon.draw(ctx, showMidpoints, showRays, false, showMotif, showIntersectionPoints);
 			}
 		}
 	}
@@ -200,7 +200,6 @@ export class Tessellation {
 			for (let x = 0; x < this.width + stepX; x += stepX) {
 				const octagon = Polygon.octagon(octagonRadius, x + stepX / 2, y + stepY / 2).rotate(Math.PI / 8);
 				octagon.contactAngle = this.contactAngle;
-				console.log(octagon.rayPairs)
 				if (this.style1) octagon.style = this.style1;
 				else if (this.style) octagon.style = this.style;
 				polygons.push(octagon);

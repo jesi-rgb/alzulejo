@@ -60,6 +60,7 @@ export class Canvas {
 
 		const ctx = this.canvas.getContext('2d');
 		if (ctx) {
+			ctx.lineCap = "round";
 			ctx.scale(dpr, dpr);
 		}
 	}
