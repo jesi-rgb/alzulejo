@@ -9,12 +9,13 @@ interface TessellationConfig {
 	size: number;
 	width: number;
 	height: number;
-	spacing?: number;
+
 	offset?: number;
 	contactAngle?: number;
 	style?: Style;
 	style1?: Style;
 	style2?: Style;
+	motifColor?: string;
 }
 
 export class Tessellation {
@@ -22,9 +23,10 @@ export class Tessellation {
 	size = $state(50);
 	width = $state(800);
 	height = $state(600);
-	spacing = $state(0);
+
 	offset = $state(0);
 	contactAngle = $state(22.5);
+	motifColor = $state<string>('purple');
 	style = $state<Style>();
 	style1 = $state<Style>();
 	style2 = $state<Style>();
@@ -34,9 +36,10 @@ export class Tessellation {
 		this.size = config.size;
 		this.width = config.width;
 		this.height = config.height;
-		this.spacing = config.spacing ?? 0;
+
 		this.offset = config.offset ?? 0;
 		this.contactAngle = config.contactAngle ?? 22.5;
+		this.motifColor = config.motifColor ?? 'purple';
 		this.style = config.style;
 		this.style1 = config.style1;
 		this.style2 = config.style2;
@@ -61,16 +64,17 @@ export class Tessellation {
 
 	private generateSquareTessellation(): Polygon[] {
 		const polygons: Polygon[] = [];
-		const stepX = this.size * 2 + this.spacing;
-		const stepY = this.size + this.spacing;
+		const stepX = this.size * 2;
+		const stepY = this.size;
 
 		let rowIndex = 0, colIndex = 0;
 		for (let y = 0; y < this.height + this.size; y += stepY) {
-			const offsetX = rowIndex % 2 === 0 ? 0 : this.size + this.spacing * 0.5;
+			const offsetX = rowIndex % 2 === 0 ? 0 : this.size;
 			colIndex = 0;
 			for (let x = 0; x < this.width + this.size; x += stepX) {
 				const polygon = Polygon.square(this.size, x + offsetX, y);
 				polygon.contactAngle = this.contactAngle;
+				polygon.motifColor = this.motifColor;
 				if (this.style) polygon.style = this.style;
 				polygons.push(polygon);
 				colIndex++;
@@ -88,8 +92,8 @@ export class Tessellation {
 		const height = this.size * 3 * Math.sin(Math.PI / 6);
 		const width = sideLength / 2;
 
-		const spacingX = this.spacing;
-		const spacingY = this.spacing * Math.sin(Math.PI / 3);
+		const spacingX = 0;
+		const spacingY = 0;
 
 		let rowIndex = 0;
 		let colIndex = 0;
@@ -104,12 +108,14 @@ export class Tessellation {
 				if (upward) {
 					polygon = Polygon.triangle(this.size, x + offsetX, y - this.size * 0.5).rotate(Math.PI);
 					polygon.contactAngle = this.contactAngle;
+					polygon.motifColor = this.motifColor;
 					if (this.style1) polygon.style = this.style1;
 					else if (this.style) polygon.style = this.style;
 				}
 				else {
 					polygon = Polygon.triangle(this.size, x + offsetX, y);
 					polygon.contactAngle = this.contactAngle;
+					polygon.motifColor = this.motifColor;
 					if (this.style2) polygon.style = this.style2;
 					else if (this.style) polygon.style = this.style;
 				}
@@ -130,12 +136,13 @@ export class Tessellation {
 
 		let rowIndex = 0, colIndex = 0;
 
-		for (let y = 0; y < this.height; y += height + this.spacing) {
+		for (let y = 0; y < this.height; y += height) {
 			colIndex = 0;
-			for (let x = 0; x < this.width; x += width + this.spacing) {
+			for (let x = 0; x < this.width; x += width) {
 				const offsetX = rowIndex % 2 === 0 ? 0 : width * 0.5;
 				const polygon = Polygon.hexagon(this.size, x + offsetX, y);
 				polygon.contactAngle = this.contactAngle;
+				polygon.motifColor = this.motifColor;
 				polygons.push(polygon);
 				colIndex++;
 			}
@@ -191,8 +198,8 @@ export class Tessellation {
 		const octagonWidth = octagonRadius * 2 * Math.cos(Math.PI / 8);
 		const octagonApothem = Polygon.octagon(octagonRadius).apothem;
 
-		const stepX = octagonWidth + squareSize + this.spacing;
-		const stepY = octagonApothem * 2 + squareSize + this.spacing;
+		const stepX = octagonWidth + squareSize;
+		const stepY = octagonApothem * 2 + squareSize;
 
 		let rowIndex = 0;
 		for (let y = -stepY; y < this.height + stepY; y += stepY) {
@@ -200,24 +207,28 @@ export class Tessellation {
 			for (let x = -stepX; x < this.width + stepX; x += stepX) {
 				const octagon = Polygon.octagon(octagonRadius, x + stepX / 2, y + stepY / 2).rotate(Math.PI / 8);
 				octagon.contactAngle = this.contactAngle;
+				octagon.motifColor = this.motifColor;
 				if (this.style1) octagon.style = this.style1;
 				else if (this.style) octagon.style = this.style;
 				polygons.push(octagon);
 
 				const octagon2 = Polygon.octagon(octagonRadius, x + stepX, y - stepY).rotate(Math.PI / 8);
 				octagon2.contactAngle = this.contactAngle;
-				if (this.style1) octagon.style = this.style1;
-				else if (this.style) octagon.style = this.style;
+				octagon2.motifColor = this.motifColor;
+				if (this.style1) octagon2.style = this.style1;
+				else if (this.style) octagon2.style = this.style;
 				polygons.push(octagon2);
 
 				const topSquare = Polygon.squareBySideLength(octagonSideLength, x + stepX / 2, y).rotate(Math.PI / 4);
 				topSquare.contactAngle = this.contactAngle;
+				topSquare.motifColor = this.motifColor;
 				if (this.style2) topSquare.style = this.style2;
 				else if (this.style) topSquare.style = this.style;
 				polygons.push(topSquare);
 
 				const leftSquare = Polygon.squareBySideLength(octagonSideLength, x + stepX, y + stepY / 2).rotate(Math.PI / 4);
 				leftSquare.contactAngle = this.contactAngle;
+				leftSquare.motifColor = this.motifColor;
 				if (this.style2) leftSquare.style = this.style2;
 				else if (this.style) leftSquare.style = this.style;
 				polygons.push(leftSquare);

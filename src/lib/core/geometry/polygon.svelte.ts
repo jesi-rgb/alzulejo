@@ -9,6 +9,7 @@ interface PolygonConfig {
 	centerX?: number;
 	centerY?: number;
 	style?: Style;
+	motifColor?: string;
 }
 
 interface RayPair {
@@ -27,6 +28,7 @@ export class Polygon {
 	centerX = $state<number>(0);
 	contactAngle = $state<number>(22.5);
 	centerY = $state<number>(0);
+	motifColor = $state<string>('purple');
 	_manualVertices = $state<Point[] | null>(null);
 
 	vertices = $derived.by(() => {
@@ -259,12 +261,13 @@ export class Polygon {
 		if (Array.isArray(verticesOrConfig)) {
 			this._manualVertices = verticesOrConfig;
 		} else {
-			const { sides, radius = 50, centerX = 0, centerY = 0 } = verticesOrConfig;
+			const { sides, radius = 50, centerX = 0, centerY = 0, motifColor = 'purple' } = verticesOrConfig;
 			this.sides = sides;
 			this.radius = radius;
 			this.centerX = centerX;
 			this.centerY = centerY;
 			this.style = verticesOrConfig.style;
+			this.motifColor = motifColor;
 		}
 	}
 
@@ -401,7 +404,8 @@ export class Polygon {
 		if (showMotif) {
 			// Show clipped ray pairs (Islamic motif)
 			ctx.save();
-			ctx.strokeStyle = 'purple';
+			const motifColor = this.style?.motifColor ?? this.motifColor;
+			ctx.strokeStyle = Canvas.computeColor(motifColor);
 			ctx.lineWidth = 2;
 
 			for (const pair of this.rayPairs) {

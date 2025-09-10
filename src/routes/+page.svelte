@@ -8,8 +8,9 @@
 	interface AppSettings {
 		tessellationType: "triangle" | "square" | "hexagon" | "octagon-square";
 		size: number;
-		spacing: number;
+
 		contactAngle: number;
+		motifColor: string;
 		showPolygons: boolean;
 		showMidpoints: boolean;
 		showRays: boolean;
@@ -18,10 +19,10 @@
 	}
 
 	const defaultSettings: AppSettings = {
-		tessellationType: "octagon-square",
-		size: 60,
-		spacing: 0,
+		tessellationType: "triangle",
+		size: 160,
 		contactAngle: 45,
+		motifColor: "var(--primary)",
 		showPolygons: false,
 		showMidpoints: false,
 		showRays: false,
@@ -36,11 +37,12 @@
 	let debounceTimer: ReturnType<typeof setTimeout>;
 
 	const style: Style = {
-		fill: "var(--accent)",
+		fill: "var(--primary)",
 		fillOpacity: 0.9,
-		stroke: "black",
+		stroke: "var(--primary)",
 		strokeWidth: 1.0,
 		strokeOpacity: 1,
+		motifColor: "var(--primary)",
 	};
 
 	const tessellation = new Tessellation({
@@ -48,8 +50,8 @@
 		size: 190,
 		width: 400,
 		height: 300,
-		spacing: 0,
 		contactAngle: 22.5,
+		motifColor: "var(--primary)",
 		style: style,
 	});
 
@@ -142,13 +144,14 @@
 		}
 		debounceTimer = setTimeout(() => {
 			updateVisualization();
-		}, 600);
+		}, 300);
 	}
 
 	onMount(() => {
 		tessellation.size = settings.size;
-		tessellation.spacing = settings.spacing;
+
 		tessellation.contactAngle = settings.contactAngle;
+		tessellation.motifColor = settings.motifColor;
 		tessellation.type = settings.tessellationType;
 
 		canvas = new Canvas();
@@ -169,48 +172,47 @@
 	});
 </script>
 
-<div class="container">
-	<header>
-		<h1>Pattern Generator</h1>
-	</header>
-
-	<div class="main-content">
-		<div class="canvas-container">
+<div class="app-container">
+	<main class="main-layout">
+		<div class="canvas-section">
 			<canvas bind:this={canvasElement}></canvas>
 		</div>
 
-		<div class="controls">
+		<aside class="parameters-section card">
+			<div>
+				<h3 class="text-primary">Pattern Generator</h3>
+			</div>
 			<div class="control-section">
-				<h3>Tessellation Type</h3>
+				<h3 class="text-primary">Tessellation Type</h3>
 				<div class="button-group">
 					<button
-						class="button {tessellation.type === 'triangle'
-							? 'active'
-							: ''}"
+						class="btn {tessellation.type === 'triangle'
+							? 'btn-primary'
+							: 'btn-neutral'}"
 						onclick={() => setTessellationType("triangle")}
 					>
 						Triangle
 					</button>
 					<button
-						class="button {tessellation.type === 'square'
-							? 'active'
-							: ''}"
+						class="btn {tessellation.type === 'square'
+							? 'btn-primary'
+							: 'btn-neutral'}"
 						onclick={() => setTessellationType("square")}
 					>
 						Square
 					</button>
 					<button
-						class="button {tessellation.type === 'hexagon'
-							? 'active'
-							: ''}"
+						class="btn {tessellation.type === 'hexagon'
+							? 'btn-primary'
+							: 'btn-neutral'}"
 						onclick={() => setTessellationType("hexagon")}
 					>
 						Hexagon
 					</button>
 					<button
-						class="button {tessellation.type === 'octagon-square'
-							? 'active'
-							: ''}"
+						class="btn {tessellation.type === 'octagon-square'
+							? 'btn-primary'
+							: 'btn-neutral'}"
 						onclick={() => setTessellationType("octagon-square")}
 					>
 						Octagon-Square
@@ -219,7 +221,7 @@
 			</div>
 
 			<div class="control-section">
-				<h3>Parameters</h3>
+				<h3 class="text-secondary">Parameters</h3>
 				<div class="slider-controls">
 					<div class="slider-control">
 						<label for="tessellation-size"
@@ -238,22 +240,7 @@
 						/>
 					</div>
 
-					<div class="slider-control">
-						<label for="tessellation-spacing"
-							>Spacing: {tessellation.spacing}</label
-						>
-						<input
-							id="tessellation-spacing"
-							type="range"
-							min="0"
-							max="80"
-							bind:value={tessellation.spacing}
-							oninput={(e) => {
-								tessellation.spacing = Number(e.target.value);
-								debouncedUpdateVisualization();
-							}}
-						/>
-					</div>
+
 
 					<div class="slider-control">
 						<label for="contact-angle"
@@ -278,7 +265,7 @@
 			</div>
 
 			<div class="control-section">
-				<h3>Visibility</h3>
+				<h3 class="text-accent">Visibility</h3>
 				<div class="checkbox-group">
 					<label class="checkbox-control">
 						<input
@@ -338,85 +325,67 @@
 				</div>
 			</div>
 
-			<div class="info">
+			<div class="info bg-base-300 text-base-content">
 				<p>
-					<strong>Polygons:</strong>
+					<strong class="text-info">Polygons:</strong>
 					{tessellation.num_elements}
 				</p>
 				<p>
-					<strong>Type:</strong>
+					<strong class="text-info">Type:</strong>
 					{tessellation.type} tessellation
 				</p>
 				<p>
-					<strong>Canvas:</strong>
+					<strong class="text-info">Canvas:</strong>
 					{Math.round(tessellation.width)} × {Math.round(
 						tessellation.height,
 					)}
 				</p>
 			</div>
-		</div>
-	</div>
+		</aside>
+	</main>
 </div>
 
 <style>
-	.container {
-		margin: 0 auto;
-		padding: 20px;
-	}
-
-	.main-content {
-		display: flex;
-		gap: 15px;
-		align-items: flex-start;
-		max-width: 1200px;
-		margin: 0 auto;
-	}
-
-	header {
-		text-align: center;
-		margin-bottom: 30px;
-		font-family: "Roslindale Variable";
-	}
-
-	header h1 {
-		margin: 0 0 10px 0;
-		font-size: 1.5rem;
-		color: var(--text-primary, #333);
-	}
-
-	.canvas-container {
-		display: flex;
-		border: 2px dashed var(--primary);
-		justify-content: center;
-		border-radius: 8px;
+	.app-container {
+		min-height: 90vh;
+		background-color: var(--base-100);
+		font-family: "Roslindale Text";
 		overflow: hidden;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-		aspect-ratio: 1/0.77;
-		flex-grow: 1;
+	}
+
+	.main-layout {
+		display: grid;
+		grid-template-columns: 1fr 320px;
+		height: calc(100vh - 80px);
+		gap: 1rem;
+		padding: 1rem;
+	}
+
+	.canvas-section {
+		background-color: var(--base-100);
+		border: 2px solid var(--primary);
+		border-radius: 0.5rem;
+		padding: 1rem;
+		display: flex;
+		overflow: hidden;
 	}
 
 	canvas {
-		width: 100%;
-		height: 100%;
+		max-width: 100%;
+		max-height: 100%;
 		display: block;
+		border-radius: 0.25rem;
+		background-color: var(--base-100);
 	}
 
-	.controls {
-		background: var(--bg-secondary, #f8f9fa);
-		border-radius: 8px;
-		padding: 12px;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-		width: 280px;
-		flex-shrink: 0;
-		font-size: 0.8rem;
+	.parameters-section {
+		padding: 1rem;
 		overflow-y: auto;
-		height: fit-content;
-		max-height: 100%;
+		font-size: 0.875rem;
 	}
 
 	.control-section {
-		font-family: "Roslindale Variable";
-		margin-bottom: 15px;
+		margin-bottom: 1.5rem;
 	}
 
 	.control-section:last-child {
@@ -424,98 +393,40 @@
 	}
 
 	.control-section h3 {
-		font-family: "Roslindale Variable";
-		margin: 0 0 8px 0;
-		font-size: 0.95rem;
-		color: var(--text-primary, #333);
-		border-bottom: 1px solid var(--accent-color, #007acc);
-		padding-bottom: 3px;
+		margin: 0 0 0.75rem 0;
+		font-size: 1rem;
+		font-weight: 600;
+		border-bottom: 2px solid currentColor;
+		padding-bottom: 0.25rem;
 		display: inline-block;
 	}
 
-	.mode-selector {
-		display: flex;
-		gap: 10px;
-		margin-bottom: 15px;
-	}
-
-	.mode-btn {
-		padding: 12px 20px;
-		border: 2px solid var(--border-color, #ddd);
-		background: white;
-		color: var(--text-primary, #333);
-		cursor: pointer;
-		border-radius: 8px;
-		font-weight: 500;
-		transition: all 0.2s ease;
-	}
-
-	.mode-btn:hover {
-		background: var(--bg-hover, #f0f0f0);
-		border-color: var(--accent-color, #007acc);
-	}
-
-	.mode-btn.active {
-		border-color: var(--accent-color, #007acc);
-		background: var(--accent-color, #007acc);
-		color: white;
-	}
-
 	.button-group {
+		font-family: "Roslindale Text";
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
-		margin-bottom: 10px;
-	}
-
-	.button {
-		padding: 6px 8px;
-		border: 1px solid var(--border-color, #ddd);
-		background: white;
-		color: var(--text-primary, #333);
-		cursor: pointer;
-		border-radius: 4px;
-		font-weight: 400;
-		font-size: 0.75rem;
-		transition: all 0.2s ease;
-		text-align: left;
-	}
-
-	.button:hover {
-		background: var(--bg-hover, #f0f0f0);
-		border-color: var(--accent-color, #007acc);
-	}
-
-	.button.active {
-		border-color: var(--accent-color, #007acc);
-		background: var(--accent-color, #007acc);
-		color: white;
+		gap: 0.5rem;
 	}
 
 	.slider-controls {
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
-		margin-bottom: 10px;
-	}
-
-	.slider-control {
-		margin-bottom: 0;
+		gap: 1rem;
 	}
 
 	.slider-control label {
 		display: block;
-		margin-bottom: 4px;
+		margin-bottom: 0.5rem;
 		font-weight: 500;
-		font-size: 0.75rem;
-		color: var(--text-primary, #333);
+		font-size: 0.875rem;
+		color: var(--base-content);
 	}
 
 	.slider-control input[type="range"] {
 		width: 100%;
-		height: 6px;
-		border-radius: 3px;
-		background: var(--border-color, #ddd);
+		height: 8px;
+		border-radius: 4px;
+		background: var(--base-300);
 		outline: none;
 		-webkit-appearance: none;
 	}
@@ -525,9 +436,9 @@
 		width: 20px;
 		height: 20px;
 		border-radius: 50%;
-		background: var(--accent-color, #007acc);
+		background: var(--accent);
 		cursor: pointer;
-		border: 2px solid white;
+		border: 2px solid var(--accent-content);
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 	}
 
@@ -535,24 +446,22 @@
 		width: 20px;
 		height: 20px;
 		border-radius: 50%;
-		background: var(--accent-color, #007acc);
+		background: var(--accent);
 		cursor: pointer;
-		border: 2px solid white;
+		border: 2px solid var(--accent-content);
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 	}
 
 	.info {
-		background: white;
-		padding: 8px;
-		border-radius: 4px;
-		border: 1px solid var(--border-color, #e0e0e0);
+		padding: 1rem;
+		border-radius: 0.5rem;
+		border: 1px solid var(--base-300);
+		font-family: monospace;
+		font-size: 0.75rem;
 	}
 
 	.info p {
-		margin: 3px 0;
-		font-family: "Courier New", monospace;
-		font-size: 0.65rem;
-		color: var(--text-secondary, #666);
+		margin: 0.25rem 0;
 	}
 
 	.info p:first-child {
@@ -563,77 +472,48 @@
 		margin-bottom: 0;
 	}
 
-	.reset-button {
-		padding: 6px 12px;
-		background: var(--warning-color, #ff6b6b);
-		color: white;
-		border: none;
-		border-radius: 4px;
-		cursor: pointer;
-		font-weight: 400;
-		font-size: 0.75rem;
-		transition: all 0.2s ease;
-		width: 100%;
-	}
-
-	.reset-button:hover {
-		background: var(--warning-color-dark, #ff5252);
-		transform: translateY(-1px);
-	}
-
 	.checkbox-group {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
+		gap: 0.75rem;
 	}
 
 	.checkbox-control {
 		display: flex;
 		align-items: center;
-		gap: 6px;
-		font-weight: 400;
-		font-size: 0.75rem;
-		color: var(--text-primary, #333);
+		gap: 0.5rem;
+		font-size: 0.875rem;
+		color: var(--base-content);
 		cursor: pointer;
 	}
 
 	.checkbox-control input[type="checkbox"] {
-		width: 14px;
-		height: 14px;
-		accent-color: var(--accent-color, #007acc);
+		width: 16px;
+		height: 16px;
+		accent-color: var(--accent);
 		cursor: pointer;
 	}
 
-	@media (max-width: 1024px) {
-		.main-content {
-			flex-direction: column;
-		}
-
-		.controls {
-			min-width: unset;
-		}
-	}
-
 	@media (max-width: 768px) {
-		.container {
-			padding: 15px;
+		.main-layout {
+			grid-template-columns: 1fr;
+			grid-template-rows: 1fr auto;
+			height: auto;
+			min-height: calc(100vh - 80px);
+		}
+
+		.canvas-section {
+			height: 60vh;
+			min-height: 300px;
+		}
+
+		.parameters-section {
+			height: auto;
+			max-height: 40vh;
 		}
 
 		header h1 {
-			font-size: 2rem;
-		}
-
-		.button-group {
-			justify-content: center;
-		}
-
-		.slider-controls {
-			grid-template-columns: 1fr;
-		}
-
-		canvas {
-			max-width: 100%;
-			height: auto;
+			font-size: 1.5rem;
 		}
 	}
 </style>
