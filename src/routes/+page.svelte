@@ -6,7 +6,12 @@
 	import { browser } from "$app/environment";
 
 	interface AppSettings {
-		tessellationType: "triangle" | "square" | "hexagon" | "octagon-square";
+		tessellationType:
+			| "triangle"
+			| "square"
+			| "hexagon"
+			| "octagon-square"
+			| "rhombitrihexagonal";
 		size: number;
 
 		contactAngle: number;
@@ -19,15 +24,15 @@
 	}
 
 	const defaultSettings: AppSettings = {
-		tessellationType: "octagon-square",
+		tessellationType: "rhombitrihexagonal",
 		size: 160,
-		contactAngle: 45,
+		contactAngle: 45.1,
 		motifColor: "var(--primary)",
 		showPolygons: true,
 		showMidpoints: true,
-		showRays: true,
+		showRays: false,
 		showRayPairs: false,
-		showIntersectionPoints: true,
+		showIntersectionPoints: false,
 	};
 
 	let settings = $state<AppSettings>({ ...defaultSettings });
@@ -114,7 +119,12 @@
 	}
 
 	function setTessellationType(
-		type: "triangle" | "square" | "hexagon" | "octagon-square",
+		type:
+			| "triangle"
+			| "square"
+			| "hexagon"
+			| "octagon-square"
+			| "rhombitrihexagonal",
 	) {
 		tessellation.type = type;
 		settings.tessellationType = type;
@@ -205,6 +215,16 @@
 						onclick={() => setTessellationType("octagon-square")}
 					>
 						Octagon-Square
+					</button>
+
+					<button
+						class="btn {tessellation.type === 'rhombitrihexagonal'
+							? 'btn-primary'
+							: 'btn-neutral'}"
+						onclick={() =>
+							setTessellationType("rhombitrihexagonal")}
+					>
+						rhombitrihexagonal
 					</button>
 				</div>
 			</div>

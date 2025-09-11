@@ -2,7 +2,7 @@ import { Polygon } from './polygon.svelte';
 import { Style } from './style.svelte';
 import { Canvas } from '../../render/canvas.svelte';
 
-type TessellationType = 'triangle' | 'square' | 'hexagon' | 'octagon-square';
+type TessellationType = 'triangle' | 'square' | 'hexagon' | 'octagon-square' | 'rhombitrihexagonal';
 
 interface TessellationConfig {
 	type: TessellationType;
@@ -19,7 +19,7 @@ interface TessellationConfig {
 }
 
 export class Tessellation {
-	type = $state<TessellationType>('hexagon');
+	type = $state<TessellationType>("hexagon");
 	size = $state(50);
 	width = $state(800);
 	height = $state(600);
@@ -55,6 +55,8 @@ export class Tessellation {
 				return this.generateHexagonTessellation();
 			case 'octagon-square':
 				return this.generateOctagonSquareTessellation();
+			case 'rhombitrihexagonal':
+				return this.generateRhombitrihexagonalTessellation();
 			default:
 				return [];
 		}
@@ -147,6 +149,54 @@ export class Tessellation {
 				colIndex++;
 			}
 			rowIndex++;
+		}
+
+		return polygons;
+	}
+
+	private generateRhombitrihexagonalTessellation(): Polygon[] {
+		const polygons: Polygon[] = [];
+
+		// For rhombitrihexagonal tiling, calculate edge length
+		const edgeLength = this.size;
+
+		// Pattern dimensions based on geometric constraints
+		// In this tiling, the hexagon is regular and all edges have the same length
+		const sqrt3 = Math.sqrt(3);
+		const hexWidth = edgeLength
+		const hexHeight = Polygon.hexagonBySideLength(edgeLength).apothem
+		const triHeight = Polygon.triangleBySideLength(edgeLength).height
+
+		const squareHeight = Polygon.squareBySideLength(edgeLength).apothem
+
+		// The fundamental repeating unit
+		const unitWidth = (squareHeight + hexWidth + triHeight) * 3;
+		const unitHeight = (squareHeight + hexHeight) * 2
+
+		for (let row = 0; row < Math.ceil(this.height / unitHeight) + 2; row++) {
+			for (let col = 0; col < Math.ceil(this.width / unitWidth) + 2; col++) {
+				const baseX = col * unitWidth;
+				const baseY = row * unitHeight;
+
+				// Create hexagons at regular grid positions
+				const hexagon = Polygon.hexagonBySideLength(edgeLength, baseX, baseY).rotate(Math.PI / 6);
+				hexagon.contactAngle = this.contactAngle;
+				hexagon.motifColor = this.motifColor;
+				if (this.style) hexagon.style = this.style;
+				polygons.push(hexagon);
+
+
+				const leftTriangle = Polygon.triangleBySideLength(
+					edgeLength,
+					edgeLength + triHeight, baseY)
+					.rotate(-Math.PI / 2);
+				leftTriangle.contactAngle = this.contactAngle;
+				leftTriangle.motifColor = this.motifColor;
+				if (this.style2) leftTriangle.style = this.style2;
+				else if (this.style) leftTriangle.style = this.style;
+				polygons.push(leftTriangle);
+
+			}
 		}
 
 		return polygons;

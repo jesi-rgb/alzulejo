@@ -26,8 +26,8 @@ export class Polygon {
 	sides = 3
 	radius = 50
 	centerX = 0
-	contactAngle = 22.5
 	centerY = 0
+	contactAngle = 22.5
 	motifColor = 'purple'
 	_manualVertices: Point[] | null = null
 
@@ -85,6 +85,12 @@ export class Polygon {
 
 		return edges;
 	});
+
+
+	circumradius = $derived(this.edges[0].magnitude / (2 * Math.sin(Math.PI / this.sides)))
+	inradius = $derived(this.edges[0].magnitude / (2 * Math.tan(Math.PI / this.sides)))
+
+	height = $derived(this.sides % 2 === 0 ? this.inradius * 2 : this.inradius + this.circumradius)
 
 	midpoints = $derived.by(() => {
 		if (this.edges.length < 0) return [];
@@ -171,7 +177,7 @@ export class Polygon {
 		if (this.rays.length < 2) return [];
 
 		const allPairs: RayPair[] = [];
-		const EPSILON = 0.1;
+		const EPSILON = 0.001;
 
 		for (let i = 0; i < this.rays.length; i++) {
 			const ray1 = this.rays[i];
@@ -188,7 +194,7 @@ export class Polygon {
 			if (originsDistanceSquared > maxDistance * maxDistance) continue;
 
 			const angleDiff = Math.abs(ray1.angle - ray2.angle);
-			const isOpposite = Math.abs(Math.abs(angleDiff - Math.PI)) < 0.1 + EPSILON;
+			const isOpposite = Math.abs(angleDiff - Math.PI) < EPSILON;
 
 			if (isOpposite) {
 				// Collinear opposite rays: cost is distance between origins (AD)
@@ -235,71 +241,6 @@ export class Polygon {
 				});
 			}
 		}
-
-		// for (let i = 0; i < this.rays.length; i++) {
-		// 	for (let j = i + 1; j < this.rays.length; j++) {
-		// 		const ray1 = this.rays[i];
-		// 		const ray2 = this.rays[j];
-		//
-		// 		if (!ray1.origin || !ray2.origin) continue;
-		//
-		// 		// // Early exit: skip rays that can't possibly intersect based on max reach
-		// 		const maxDistance = ray1.length + ray2.length;
-		// 		const originsDistanceSquared =
-		// 			(ray2.origin.x - ray1.origin.x, 2) * (ray2.origin.x - ray1.origin.x, 2) +
-		// 			(ray2.origin.y - ray1.origin.y, 2) * (ray2.origin.y - ray1.origin.y, 2);
-		//
-		// 		if (originsDistanceSquared > maxDistance * maxDistance) continue;
-		//
-		// 		const angleDiff = Math.abs(ray1.angle - ray2.angle);
-		// 		const isOpposite = Math.abs(Math.abs(angleDiff - Math.PI)) < 0.1 + EPSILON;
-		//
-		// 		if (isOpposite) {
-		// 			// Collinear opposite rays: cost is distance between origins (AD)
-		// 			const originsDistance = Math.sqrt(
-		// 				originsDistanceSquared
-		// 			);
-		//
-		// 			allPairs.push({
-		// 				ray1,
-		// 				ray2,
-		// 				totalLength: originsDistance,
-		// 				intersectionPoint: ray1.origin,
-		// 				clippedRay1: ray1,
-		// 				clippedRay2: ray2
-		// 			});
-		// 			continue;
-		// 		}
-		//
-		// 		// Check if rays intersect
-		// 		const intersection = ray1.intersect(ray2);
-		// 		if (intersection) {
-		// 			const distAPSquared =
-		// 				Math.pow(intersection.x - ray1.origin.x, 2) +
-		// 				Math.pow(intersection.y - ray1.origin.y, 2);
-		// 			const distPDSquared =
-		// 				Math.pow(intersection.x - ray2.origin.x, 2) +
-		// 				Math.pow(intersection.y - ray2.origin.y, 2);
-		//
-		// 			const distAP = Math.sqrt(distAPSquared);
-		// 			const distPD = Math.sqrt(distPDSquared);
-		//
-		// 			// if these were let in, because we want the 
-		// 			// smallest numbers, they would score the highest 
-		// 			// and display nothing
-		// 			if (distAP + distPD == 0) continue;
-		//
-		// 			allPairs.push({
-		// 				ray1,
-		// 				ray2,
-		// 				totalLength: distAP + distPD,
-		// 				intersectionPoint: intersection,
-		// 				clippedRay1: Ray.rayFromEdge(new Edge(ray1.origin, intersection)),
-		// 				clippedRay2: Ray.rayFromEdge(new Edge(ray2.origin, intersection))
-		// 			});
-		// 		}
-		// 	}
-		// }
 
 		allPairs.sort((a, b) => {
 			const diff = a.totalLength - b.totalLength;
@@ -464,6 +405,7 @@ export class Polygon {
 		}
 
 
+
 		if (showMotif) {
 			// Show clipped ray pairs (Islamic motif)
 			ctx.save();
@@ -490,14 +432,25 @@ export class Polygon {
 		}
 
 		if (midpoints) {
+
 			ctx.beginPath();
 			for (let i = 0; i < this.midpoints.length; i++) {
 				const midpoint = this.midpoints[i];
 				ctx.moveTo(midpoint.x + 2, midpoint.y);
 				ctx.ellipse(midpoint.x, midpoint.y, 4, 4, 0, 0, Math.PI * 2);
 			}
+
 			ctx.fillStyle = 'red';
 			ctx.fill();
+		}
+
+		if (true) {
+			ctx.save();
+			ctx.beginPath();
+			ctx.ellipse(this.center.x, this.center.y, 4, 4, 0, 0, Math.PI * 2);
+			ctx.fillStyle = 'blue';
+			ctx.fill();
+			ctx.restore();
 		}
 
 		if (rays && !showMotif) {
