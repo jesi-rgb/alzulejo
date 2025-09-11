@@ -1,8 +1,8 @@
 export class Point {
-	x = $state(0);
-	y = $state(0);
+	x = 0;
+	y = 0;
 
-	constructor(x: number, y: number) {
+	constructor(x: number = 0, y: number = 0) {
 		this.x = x;
 		this.y = y;
 	}
@@ -11,12 +11,12 @@ export class Point {
 interface Intersectable {
 	start: Point | undefined;
 	end: Point | undefined;
-	intersect(other: Intersectable): Point | null;
+	intersect(other: Intersectable): Point | null
 }
 
 export class Edge implements Intersectable {
-	start = $state<Point>();
-	end = $state<Point>();
+	start = new Point();
+	end = new Point();
 
 	constructor(start: Point, end: Point) {
 		this.start = start;
@@ -63,7 +63,7 @@ export class Edge implements Intersectable {
 		const line2Dy = line2End.y - line2Start.y;
 
 		const det = line1Dx * line2Dy - line1Dy * line2Dx;
-		if (Math.abs(det) < 1e-10) return null;
+		if (Math.abs(det) < 1e-4) return null;
 
 		const dx = line2Start.x - line1Start.x;
 		const dy = line2Start.y - line1Start.y;
@@ -83,9 +83,9 @@ export class Edge implements Intersectable {
 }
 
 export class Ray implements Intersectable {
-	origin = $state<Point>();
-	direction = $state<number>(0);
-	length = $state<number>(100);
+	origin = new Point();
+	direction = 0
+	length = 100
 	edgeIndex?: number;
 
 	constructor(origin: Point, direction: number, length: number = 100) {
@@ -151,7 +151,6 @@ export class Ray implements Intersectable {
 	static rayFromEdge(edge: Edge): Ray {
 		if (!edge.start || !edge.end) return new Ray(new Point(0, 0), 0);
 
-		const ray = new Ray(edge.start, edge.angle, edge.magnitude);
-		return ray;
+		return new Ray(edge.start, edge.angle, edge.magnitude);
 	}
 }

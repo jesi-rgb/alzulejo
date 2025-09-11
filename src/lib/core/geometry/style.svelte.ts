@@ -1,6 +1,15 @@
 
-export class Style {
-	fill = $state('blue');
+type StyleType = {
+	fill?: string;
+	fillOpacity?: number;
+	stroke?: string;
+	strokeWidth?: number;
+	strokeOpacity?: number;
+	motifColor?: string;
+}
+
+export class Style implements StyleType {
+	fill = 'blue'
 	fillOpacity = $state(1);
 	stroke = $state('black');
 	strokeWidth = $state(1);
@@ -8,11 +17,11 @@ export class Style {
 	motifColor = $state('purple');
 
 	constructor(
-		fill: string,
-		fillOpacity: number,
-		stroke: string,
-		strokeWidth: number,
-		strokeOpacity: number,
+		fill: string = 'aquamarine',
+		fillOpacity: number = 1,
+		stroke: string = 'black',
+		strokeWidth: number = 1,
+		strokeOpacity: number = 1,
 		motifColor: string = 'purple',
 	) {
 		this.fill = fill;

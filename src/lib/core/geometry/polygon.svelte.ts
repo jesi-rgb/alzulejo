@@ -23,13 +23,13 @@ interface RayPair {
 
 export class Polygon {
 	style = $state<Style>();
-	sides = $state<number>(3);
-	radius = $state<number>(50);
-	centerX = $state<number>(0);
-	contactAngle = $state<number>(22.5);
-	centerY = $state<number>(0);
-	motifColor = $state<string>('purple');
-	_manualVertices = $state<Point[] | null>(null);
+	sides = 3
+	radius = 50
+	centerX = 0
+	contactAngle = 22.5
+	centerY = 0
+	motifColor = 'purple'
+	_manualVertices: Point[] | null = null
 
 	vertices = $derived.by(() => {
 		if (this._manualVertices) {
@@ -174,69 +174,132 @@ export class Polygon {
 		const EPSILON = 0.1;
 
 		for (let i = 0; i < this.rays.length; i++) {
-			for (let j = i + 1; j < this.rays.length; j++) {
-				const ray1 = this.rays[i];
-				const ray2 = this.rays[j];
+			const ray1 = this.rays[i];
+			const ray2 = this.rays[(i + 1) % this.rays.length];
 
-				if (!ray1.origin || !ray2.origin) continue;
+			if (!ray1.origin || !ray2.origin) continue;
 
-				// // Early exit: skip rays that can't possibly intersect based on max reach
-				const maxDistance = ray1.length + ray2.length;
-				const originsDistanceSquared =
-					Math.pow(ray2.origin.x - ray1.origin.x, 2) +
-					Math.pow(ray2.origin.y - ray1.origin.y, 2);
-				if (originsDistanceSquared > maxDistance * maxDistance) continue;
+			// // Early exit: skip rays that can't possibly intersect based on max reach
+			const maxDistance = ray1.length + ray2.length;
+			const originsDistanceSquared =
+				(ray2.origin.x - ray1.origin.x, 2) * (ray2.origin.x - ray1.origin.x, 2) +
+				(ray2.origin.y - ray1.origin.y, 2) * (ray2.origin.y - ray1.origin.y, 2);
 
-				const angleDiff = Math.abs(ray1.angle - ray2.angle);
-				const isOpposite = Math.abs(Math.abs(angleDiff - Math.PI)) < 0.1 + EPSILON;
+			if (originsDistanceSquared > maxDistance * maxDistance) continue;
 
-				if (isOpposite) {
-					// Collinear opposite rays: cost is distance between origins (AD)
-					const originsDistance = Math.sqrt(
-						Math.pow(ray2.origin.x - ray1.origin.x, 2) +
-						Math.pow(ray2.origin.y - ray1.origin.y, 2)
-					);
+			const angleDiff = Math.abs(ray1.angle - ray2.angle);
+			const isOpposite = Math.abs(Math.abs(angleDiff - Math.PI)) < 0.1 + EPSILON;
 
-					allPairs.push({
-						ray1,
-						ray2,
-						totalLength: originsDistance,
-						intersectionPoint: ray1.origin,
-						clippedRay1: ray1,
-						clippedRay2: ray2
-					});
-					continue;
-				}
+			if (isOpposite) {
+				// Collinear opposite rays: cost is distance between origins (AD)
+				const originsDistance = Math.sqrt(
+					originsDistanceSquared
+				);
 
-				// Check if rays intersect
-				const intersection = ray1.intersect(ray2);
-				if (intersection) {
-					const distAPSquared =
-						Math.pow(intersection.x - ray1.origin.x, 2) +
-						Math.pow(intersection.y - ray1.origin.y, 2);
-					const distPDSquared =
-						Math.pow(intersection.x - ray2.origin.x, 2) +
-						Math.pow(intersection.y - ray2.origin.y, 2);
+				allPairs.push({
+					ray1,
+					ray2,
+					totalLength: originsDistance,
+					intersectionPoint: ray1.origin,
+					clippedRay1: ray1,
+					clippedRay2: ray2
+				});
+				continue;
+			}
 
-					const distAP = Math.sqrt(distAPSquared);
-					const distPD = Math.sqrt(distPDSquared);
+			// Check if rays intersect
+			const intersection = ray1.intersect(ray2);
+			if (intersection) {
+				const distAPSquared =
+					Math.pow(intersection.x - ray1.origin.x, 2) +
+					Math.pow(intersection.y - ray1.origin.y, 2);
+				const distPDSquared =
+					Math.pow(intersection.x - ray2.origin.x, 2) +
+					Math.pow(intersection.y - ray2.origin.y, 2);
 
-					// if these were let in, because we want the 
-					// smallest numbers, they would score the highest 
-					// and display nothing
-					if (distAP + distPD == 0) continue;
+				const distAP = Math.sqrt(distAPSquared);
+				const distPD = Math.sqrt(distPDSquared);
 
-					allPairs.push({
-						ray1,
-						ray2,
-						totalLength: distAP + distPD,
-						intersectionPoint: intersection,
-						clippedRay1: Ray.rayFromEdge(new Edge(ray1.origin, intersection)),
-						clippedRay2: Ray.rayFromEdge(new Edge(ray2.origin, intersection))
-					});
-				}
+				// if these were let in, because we want the 
+				// smallest numbers, they would score the highest 
+				// and display nothing
+				if (distAP + distPD == 0) continue;
+
+				allPairs.push({
+					ray1,
+					ray2,
+					totalLength: distAP + distPD,
+					intersectionPoint: intersection,
+					clippedRay1: Ray.rayFromEdge(new Edge(ray1.origin, intersection)),
+					clippedRay2: Ray.rayFromEdge(new Edge(ray2.origin, intersection))
+				});
 			}
 		}
+
+		// for (let i = 0; i < this.rays.length; i++) {
+		// 	for (let j = i + 1; j < this.rays.length; j++) {
+		// 		const ray1 = this.rays[i];
+		// 		const ray2 = this.rays[j];
+		//
+		// 		if (!ray1.origin || !ray2.origin) continue;
+		//
+		// 		// // Early exit: skip rays that can't possibly intersect based on max reach
+		// 		const maxDistance = ray1.length + ray2.length;
+		// 		const originsDistanceSquared =
+		// 			(ray2.origin.x - ray1.origin.x, 2) * (ray2.origin.x - ray1.origin.x, 2) +
+		// 			(ray2.origin.y - ray1.origin.y, 2) * (ray2.origin.y - ray1.origin.y, 2);
+		//
+		// 		if (originsDistanceSquared > maxDistance * maxDistance) continue;
+		//
+		// 		const angleDiff = Math.abs(ray1.angle - ray2.angle);
+		// 		const isOpposite = Math.abs(Math.abs(angleDiff - Math.PI)) < 0.1 + EPSILON;
+		//
+		// 		if (isOpposite) {
+		// 			// Collinear opposite rays: cost is distance between origins (AD)
+		// 			const originsDistance = Math.sqrt(
+		// 				originsDistanceSquared
+		// 			);
+		//
+		// 			allPairs.push({
+		// 				ray1,
+		// 				ray2,
+		// 				totalLength: originsDistance,
+		// 				intersectionPoint: ray1.origin,
+		// 				clippedRay1: ray1,
+		// 				clippedRay2: ray2
+		// 			});
+		// 			continue;
+		// 		}
+		//
+		// 		// Check if rays intersect
+		// 		const intersection = ray1.intersect(ray2);
+		// 		if (intersection) {
+		// 			const distAPSquared =
+		// 				Math.pow(intersection.x - ray1.origin.x, 2) +
+		// 				Math.pow(intersection.y - ray1.origin.y, 2);
+		// 			const distPDSquared =
+		// 				Math.pow(intersection.x - ray2.origin.x, 2) +
+		// 				Math.pow(intersection.y - ray2.origin.y, 2);
+		//
+		// 			const distAP = Math.sqrt(distAPSquared);
+		// 			const distPD = Math.sqrt(distPDSquared);
+		//
+		// 			// if these were let in, because we want the 
+		// 			// smallest numbers, they would score the highest 
+		// 			// and display nothing
+		// 			if (distAP + distPD == 0) continue;
+		//
+		// 			allPairs.push({
+		// 				ray1,
+		// 				ray2,
+		// 				totalLength: distAP + distPD,
+		// 				intersectionPoint: intersection,
+		// 				clippedRay1: Ray.rayFromEdge(new Edge(ray1.origin, intersection)),
+		// 				clippedRay2: Ray.rayFromEdge(new Edge(ray2.origin, intersection))
+		// 			});
+		// 		}
+		// 	}
+		// }
 
 		allPairs.sort((a, b) => {
 			const diff = a.totalLength - b.totalLength;
