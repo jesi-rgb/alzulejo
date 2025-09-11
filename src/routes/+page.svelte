@@ -31,7 +31,7 @@
 		showPolygons: true,
 		showMidpoints: true,
 		showRays: false,
-		showRayPairs: false,
+		showRayPairs: true,
 		showIntersectionPoints: false,
 	};
 

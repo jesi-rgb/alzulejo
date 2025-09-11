@@ -1,6 +1,15 @@
 import { Polygon } from './polygon.svelte';
 import { Style } from './style.svelte';
 import { Canvas } from '../../render/canvas.svelte';
+import {
+	TessellationPattern,
+	PolygonFactory,
+	HexagonPattern,
+	TrianglePattern,
+	SquarePattern,
+	OctagonSquarePattern,
+	RhombitrihexagonalPattern
+} from './patterns';
 
 type TessellationType = 'triangle' | 'square' | 'hexagon' | 'octagon-square' | 'rhombitrihexagonal';
 
@@ -46,112 +55,57 @@ export class Tessellation {
 	}
 
 	polygons: Polygon[] = $derived.by(() => {
-		switch (this.type) {
-			case 'triangle':
-				return this.generateTriangleTessellation();
-			case 'square':
-				return this.generateSquareTessellation();
-			case 'hexagon':
-				return this.generateHexagonTessellation();
-			case 'octagon-square':
-				return this.generateOctagonSquareTessellation();
-			case 'rhombitrihexagonal':
-				return this.generateRhombitrihexagonalTessellation();
-			default:
-				return [];
+		const newSystemTypes = ['triangle', 'square', 'hexagon', 'octagon-square', 'rhombitrihexagonal'];
+		if (newSystemTypes.includes(this.type)) {
+			return this.generateFromPattern();
 		}
+
+		// Fallback for any remaining old system types
+		return [];
 	});
 
 	num_elements = $derived(this.polygons.length)
 
-	private generateSquareTessellation(): Polygon[] {
-		const polygons: Polygon[] = [];
-		const stepX = this.size * 2;
-		const stepY = this.size;
+	private generateFromPattern(): Polygon[] {
+		const pattern = this.getPattern();
+		if (!pattern) return [];
 
-		let rowIndex = 0, colIndex = 0;
-		for (let y = 0; y < this.height + this.size; y += stepY) {
-			const offsetX = rowIndex % 2 === 0 ? 0 : this.size;
-			colIndex = 0;
-			for (let x = 0; x < this.width + this.size; x += stepX) {
-				const polygon = Polygon.square(this.size, x + offsetX, y);
-				polygon.contactAngle = this.contactAngle;
-				polygon.motifColor = this.motifColor;
-				if (this.style) polygon.style = this.style;
-				polygons.push(polygon);
-				colIndex++;
-			}
-			rowIndex++;
+		const factory = new PolygonFactory(
+			this.size,
+			this.contactAngle,
+			this.motifColor,
+			this.style,
+			this.style1,
+			this.style2
+		);
+
+		const polygons: Polygon[] = [];
+		const bounds = { width: this.width, height: this.height };
+
+		for (const tilePosition of pattern.generatePositions(bounds)) {
+			const polygon = factory.create(tilePosition, tilePosition.x, tilePosition.y);
+			polygons.push(polygon);
 		}
 
+		console.log(polygons)
 		return polygons;
 	}
 
-	private generateTriangleTessellation(): Polygon[] {
-		const polygons: Polygon[] = [];
-		const sideLength = 2 * this.size * Math.sin(Math.PI / 3);
-
-		const height = this.size * 3 * Math.sin(Math.PI / 6);
-		const width = sideLength / 2;
-
-		const spacingX = 0;
-		const spacingY = 0;
-
-		let rowIndex = 0;
-		let colIndex = 0;
-
-		for (let y = 0; y < this.height + height; y += height + spacingY) {
-			const offsetX = rowIndex % 2 === 0 ? this.offset : (sideLength + spacingY) * 0.5 + this.offset;
-			colIndex = 0;
-			for (let x = 0; x < this.width + width; x += width + spacingX) {
-				const upward = colIndex % 2 === 0;
-				let polygon;
-
-				if (upward) {
-					polygon = Polygon.triangle(this.size, x + offsetX, y - this.size * 0.5).rotate(Math.PI);
-					polygon.contactAngle = this.contactAngle;
-					polygon.motifColor = this.motifColor;
-					if (this.style1) polygon.style = this.style1;
-					else if (this.style) polygon.style = this.style;
-				}
-				else {
-					polygon = Polygon.triangle(this.size, x + offsetX, y);
-					polygon.contactAngle = this.contactAngle;
-					polygon.motifColor = this.motifColor;
-					if (this.style2) polygon.style = this.style2;
-					else if (this.style) polygon.style = this.style;
-				}
-
-				polygons.push(polygon);
-				colIndex++;
-			}
-			rowIndex++
+	private getPattern(): TessellationPattern | null {
+		switch (this.type) {
+			case 'hexagon':
+				return new HexagonPattern(this.size);
+			case 'triangle':
+				return new TrianglePattern(this.size);
+			case 'square':
+				return new SquarePattern(this.size);
+			case 'octagon-square':
+				return new OctagonSquarePattern(this.size);
+			case 'rhombitrihexagonal':
+				return new RhombitrihexagonalPattern(this.size);
+			default:
+				return null;
 		}
-
-		return polygons
-	}
-
-	private generateHexagonTessellation(): Polygon[] {
-		const polygons: Polygon[] = [];
-		const width = this.size * Math.sqrt(3);
-		const height = this.size * 1.5;
-
-		let rowIndex = 0, colIndex = 0;
-
-		for (let y = 0; y < this.height; y += height) {
-			colIndex = 0;
-			for (let x = 0; x < this.width; x += width) {
-				const offsetX = rowIndex % 2 === 0 ? 0 : width * 0.5;
-				const polygon = Polygon.hexagon(this.size, x + offsetX, y);
-				polygon.contactAngle = this.contactAngle;
-				polygon.motifColor = this.motifColor;
-				polygons.push(polygon);
-				colIndex++;
-			}
-			rowIndex++;
-		}
-
-		return polygons;
 	}
 
 	private generateRhombitrihexagonalTessellation(): Polygon[] {

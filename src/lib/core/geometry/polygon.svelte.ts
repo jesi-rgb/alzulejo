@@ -23,13 +23,27 @@ interface RayPair {
 
 export class Polygon {
 	style = $state<Style>();
-	sides = 3
+	sides = $state(3)
 	radius = 50
 	centerX = 0
 	centerY = 0
 	contactAngle = 22.5
 	motifColor = 'purple'
 	_manualVertices: Point[] | null = null
+
+	constructor(verticesOrConfig: Point[] | PolygonConfig) {
+		if (Array.isArray(verticesOrConfig)) {
+			this._manualVertices = verticesOrConfig;
+		} else {
+			const { sides, radius = 50, centerX = 0, centerY = 0, motifColor = 'purple' } = verticesOrConfig;
+			this.sides = sides;
+			this.radius = radius;
+			this.centerX = centerX;
+			this.centerY = centerY;
+			this.style = verticesOrConfig.style;
+			this.motifColor = motifColor;
+		}
+	}
 
 	vertices = $derived.by(() => {
 		if (this._manualVertices) {
@@ -261,19 +275,6 @@ export class Polygon {
 		return selectedPairs;
 	});
 
-	constructor(verticesOrConfig: Point[] | PolygonConfig) {
-		if (Array.isArray(verticesOrConfig)) {
-			this._manualVertices = verticesOrConfig;
-		} else {
-			const { sides, radius = 50, centerX = 0, centerY = 0, motifColor = 'purple' } = verticesOrConfig;
-			this.sides = sides;
-			this.radius = radius;
-			this.centerX = centerX;
-			this.centerY = centerY;
-			this.style = verticesOrConfig.style;
-			this.motifColor = motifColor;
-		}
-	}
 
 	private generateRegularVertices(sides: number, radius: number, centerX: number, centerY: number): Point[] {
 		const vertices: Point[] = [];
@@ -299,8 +300,12 @@ export class Polygon {
 			const y = centerY + radius * Math.sin(angle);
 			vertices.push(new Point(x, y));
 		}
+		const polygon = new Polygon(vertices);
+		polygon.sides = sides;
+		polygon.centerX = centerX;
+		polygon.centerY = centerY;
 
-		return new Polygon(vertices);
+		return polygon
 	}
 
 	static triangle(radius: number = 50, centerX: number = 0, centerY: number = 0): Polygon {
