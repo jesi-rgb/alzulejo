@@ -177,7 +177,7 @@ export class Polygon {
 		if (this.rays.length < 2) return [];
 
 		const allPairs: RayPair[] = [];
-		const EPSILON = 0.001;
+		const EPSILON = 0.1;
 
 		for (let i = 0; i < this.rays.length; i++) {
 			const ray1 = this.rays[i];
