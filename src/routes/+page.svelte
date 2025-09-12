@@ -11,7 +11,8 @@
 			| "square"
 			| "hexagon"
 			| "octagon-square"
-			| "rhombitrihexagonal";
+			| "rhombitrihexagonal"
+			| "snub-square";
 		size: number;
 
 		contactAngle: number;
@@ -24,7 +25,7 @@
 	}
 
 	const defaultSettings: AppSettings = {
-		tessellationType: "rhombitrihexagonal",
+		tessellationType: "snub-square",
 		size: 100,
 		contactAngle: 45.1,
 		motifColor: "var(--primary)",

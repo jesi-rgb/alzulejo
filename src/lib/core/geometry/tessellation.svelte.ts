@@ -10,8 +10,9 @@ import {
 	OctagonSquarePattern,
 	RhombitrihexagonalPattern
 } from './patterns';
+import { SnubSquarePattern } from './patterns/SnubSquarePattern';
 
-type TessellationType = 'triangle' | 'square' | 'hexagon' | 'octagon-square' | 'rhombitrihexagonal';
+type TessellationType = 'triangle' | 'square' | 'hexagon' | 'octagon-square' | 'rhombitrihexagonal' | 'snub-square';
 
 interface TessellationConfig {
 	type: TessellationType;
@@ -55,7 +56,7 @@ export class Tessellation {
 	}
 
 	polygons: Polygon[] = $derived.by(() => {
-		const newSystemTypes = ['triangle', 'square', 'hexagon', 'octagon-square', 'rhombitrihexagonal'];
+		const newSystemTypes = ['triangle', 'square', 'hexagon', 'octagon-square', 'rhombitrihexagonal', 'snub-square'];
 		if (newSystemTypes.includes(this.type)) {
 			return this.generateFromPattern();
 		}
@@ -87,7 +88,6 @@ export class Tessellation {
 			polygons.push(polygon);
 		}
 
-		console.log(polygons)
 		return polygons;
 	}
 
@@ -103,6 +103,8 @@ export class Tessellation {
 				return new OctagonSquarePattern(this.size);
 			case 'rhombitrihexagonal':
 				return new RhombitrihexagonalPattern(this.size);
+			case 'snub-square':
+				return new SnubSquarePattern(this.size);
 			default:
 				return null;
 		}
