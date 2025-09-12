@@ -43,9 +43,9 @@ export class RhombitrihexagonalPattern extends TessellationPattern {
 		const squareHeight = square.height;
 
 		const hexWidth = sharedEdgeLength * 2;
-		const triWidth = sharedEdgeLength, squareWidth = sharedEdgeLength;
+		const squareWidth = sharedEdgeLength;
 
-		const stepY = hexHeight + squareHeight;
+		const stepY = hexHeight / 2 + squareHeight / 2;
 		const stepX = hexWidth + triHeight + squareWidth + triHeight;
 
 		for (let row = 0; row < Math.ceil(bounds.height / stepY) + 2; row++) {
@@ -55,11 +55,11 @@ export class RhombitrihexagonalPattern extends TessellationPattern {
 
 				// Shift every other row by half unit + square separation
 				const offsetX = row % 2 === 0 ? 0 : stepX / 2;
-				const rowOffsetY = row % 2 === 0 ? 0 : squareWidth * 0.5; // Add vertical separation
+				const rowOffsetY = 0; // Add vertical separation
 
 				// Minimal unit pattern: Hex → Tri → Square → Tri
 				let currentX = baseX + offsetX;
-				const unitY = baseY + stepY / 2 + rowOffsetY;
+				const unitY = baseY;
 
 				// 1. Hexagon
 				yield {
