@@ -477,14 +477,6 @@ export class Polygon {
 			ctx.restore();
 		}
 
-		if (true) {
-			ctx.save();
-			ctx.beginPath();
-			ctx.ellipse(this.center.x, this.center.y, 4, 4, 0, 0, Math.PI * 2);
-			ctx.fillStyle = 'blue';
-			ctx.fill();
-			ctx.restore();
-		}
 	}
 
 	color(ctx: CanvasRenderingContext2D): void {
