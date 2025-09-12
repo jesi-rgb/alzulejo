@@ -449,14 +449,6 @@ export class Polygon {
 			ctx.fill();
 		}
 
-		if (true) {
-			ctx.save();
-			ctx.beginPath();
-			ctx.ellipse(this.center.x, this.center.y, 4, 4, 0, 0, Math.PI * 2);
-			ctx.fillStyle = 'blue';
-			ctx.fill();
-			ctx.restore();
-		}
 
 		if (rays && !showMotif) {
 			// Show individual rays (original behavior)
@@ -481,6 +473,15 @@ export class Polygon {
 				ctx.moveTo(point.x + 3, point.y);
 				ctx.ellipse(point.x, point.y, 3, 3, 0, 0, Math.PI * 2);
 			}
+			ctx.fill();
+			ctx.restore();
+		}
+
+		if (true) {
+			ctx.save();
+			ctx.beginPath();
+			ctx.ellipse(this.center.x, this.center.y, 4, 4, 0, 0, Math.PI * 2);
+			ctx.fillStyle = 'blue';
 			ctx.fill();
 			ctx.restore();
 		}

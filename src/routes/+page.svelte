@@ -25,13 +25,13 @@
 
 	const defaultSettings: AppSettings = {
 		tessellationType: "rhombitrihexagonal",
-		size: 160,
+		size: 100,
 		contactAngle: 45.1,
 		motifColor: "var(--primary)",
 		showPolygons: true,
-		showMidpoints: true,
+		showMidpoints: false,
 		showRays: false,
-		showRayPairs: true,
+		showRayPairs: false,
 		showIntersectionPoints: false,
 	};
 

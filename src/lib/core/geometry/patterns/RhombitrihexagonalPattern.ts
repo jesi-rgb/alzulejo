@@ -29,23 +29,24 @@ export class RhombitrihexagonalPattern extends TessellationPattern {
 		// For rhombitrihexagonal tiling (3.4.6.4), use shared edge length
 		const sharedEdgeLength = this.size;
 
-		// Use side-length-based methods for consistent edge lengths
 		const triangle = Polygon.triangleBySideLength(sharedEdgeLength);
 		const square = Polygon.squareBySideLength(sharedEdgeLength);
 		const hexagon = Polygon.hexagonBySideLength(sharedEdgeLength);
 
-		// Calculate relative sizes for the PolygonFactory
 		const triangleRelativeSize = triangle.circumradius / this.size;
 		const squareRelativeSize = square.circumradius / this.size;
 		const hexagonRelativeSize = hexagon.circumradius / this.size;
 
-		// Minimal unit: Hex → Tri → Square → Tri (horizontally aligned)
-		const hexWidth = hexagon.circumradius * 2 * Math.cos(Math.PI / 6);
-		const triWidth = triangle.circumradius * 2 * Math.cos(Math.PI / 6);
-		const squareWidth = square.circumradius * Math.sqrt(2);
 
-		const stepX = hexWidth + triWidth + squareWidth + triWidth;
-		const stepY = hexagon.circumradius * 2;
+		const hexHeight = hexagon.height;
+		const triHeight = triangle.height;
+		const squareHeight = square.height;
+
+		const hexWidth = sharedEdgeLength * 2;
+		const triWidth = sharedEdgeLength, squareWidth = sharedEdgeLength;
+
+		const stepY = hexHeight + squareHeight;
+		const stepX = hexWidth + triHeight + squareWidth + triHeight;
 
 		for (let row = 0; row < Math.ceil(bounds.height / stepY) + 2; row++) {
 			for (let col = 0; col < Math.ceil(bounds.width / stepX) + 2; col++) {
@@ -53,7 +54,7 @@ export class RhombitrihexagonalPattern extends TessellationPattern {
 				const baseY = row * stepY - stepY;
 
 				// Shift every other row by half unit + square separation
-				const offsetX = row % 2 === 0 ? 0 : stepX * 0.5 + squareWidth * 0.5;
+				const offsetX = row % 2 === 0 ? 0 : stepX / 2;
 				const rowOffsetY = row % 2 === 0 ? 0 : squareWidth * 0.5; // Add vertical separation
 
 				// Minimal unit pattern: Hex → Tri → Square → Tri
@@ -62,58 +63,42 @@ export class RhombitrihexagonalPattern extends TessellationPattern {
 
 				// 1. Hexagon
 				yield {
-					x: currentX + hexWidth / 2,
+					x: currentX,
 					y: unitY,
 					polygonType: 'hexagon',
 					relativeSize: hexagonRelativeSize,
 					rotation: Math.PI / 6,
 					styleKey: 'style1'
 				};
-				currentX += hexWidth;
 
 				// 2. First Triangle (rotated)
 				yield {
-					x: sharedEdgeLength + (triangle.height - 0.5 * sharedEdgeLength),
+					x: currentX + hexWidth / 2 + triHeight / 1.5,
 					y: unitY,
 					polygonType: 'triangle',
 					relativeSize: triangleRelativeSize,
 					rotation: -Math.PI / 2, // Rotated
 					styleKey: 'style2'
 				};
-				currentX += triWidth;
 
 				// 3. Square
 				yield {
-					x: currentX + squareWidth / 2,
+					x: currentX + hexWidth / 2 + triHeight + sharedEdgeLength / 2,
 					y: unitY,
 					polygonType: 'square',
 					relativeSize: squareRelativeSize,
 					rotation: Math.PI / 4,
 					styleKey: 'default'
 				};
-				currentX += squareWidth;
 
-				// 4. Second Triangle (rotated)
 				yield {
-					x: currentX + triWidth / 2,
+					x: currentX + hexWidth / 2 + triHeight + squareWidth + triHeight * 1 / 3,
 					y: unitY,
 					polygonType: 'triangle',
 					relativeSize: triangleRelativeSize,
-					rotation: Math.PI, // Rotated
+					rotation: Math.PI / 2, // Rotated
 					styleKey: 'style2'
 				};
-
-				// Add row separator squares for even rows
-				if (row % 2 === 0 && col === 0) {
-					yield {
-						x: baseX + stepX / 2,
-						y: baseY + stepY + squareWidth / 2,
-						polygonType: 'square',
-						relativeSize: squareRelativeSize,
-						rotation: Math.PI / 4,
-						styleKey: 'default'
-					};
-				}
 			}
 		}
 	}
