@@ -20,19 +20,21 @@
 		showPolygons: boolean;
 		showMidpoints: boolean;
 		showRays: boolean;
-		showRayPairs: boolean;
+		showMotif: boolean;
+		showMotifFilled: boolean;
 		showIntersectionPoints: boolean;
 	}
 
 	const defaultSettings: AppSettings = {
-		tessellationType: "snub-square",
+		tessellationType: "octagon-square",
 		size: 100,
 		contactAngle: 45.1,
 		motifColor: "var(--primary)",
-		showPolygons: true,
+		showPolygons: false,
 		showMidpoints: false,
 		showRays: false,
-		showRayPairs: false,
+		showMotif: false,
+		showMotifFilled: true,
 		showIntersectionPoints: false,
 	};
 
@@ -98,7 +100,8 @@
 			settings.showPolygons,
 			settings.showMidpoints,
 			settings.showRays,
-			settings.showRayPairs,
+			settings.showMotif,
+			settings.showMotifFilled,
 			settings.showIntersectionPoints,
 		);
 	}
@@ -142,7 +145,8 @@
 			settings.showPolygons,
 			settings.showMidpoints,
 			settings.showRays,
-			settings.showRayPairs,
+			settings.showMotif,
+			settings.showMotifFilled,
 			settings.showIntersectionPoints,
 		);
 	}
@@ -311,13 +315,24 @@
 					<label class="checkbox-control">
 						<input
 							type="checkbox"
-							bind:checked={settings.showRayPairs}
+							bind:checked={settings.showMotif}
 							onchange={() => {
 								saveSettings();
 								updateVisualization();
 							}}
 						/>
 						Show Motif
+					</label>
+					<label class="checkbox-control">
+						<input
+							type="checkbox"
+							bind:checked={settings.showMotifFilled}
+							onchange={() => {
+								saveSettings();
+								updateVisualization();
+							}}
+						/>
+						Show Filled Motif
 					</label>
 					<label class="checkbox-control">
 						<input

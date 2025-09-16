@@ -166,7 +166,7 @@ export class Tessellation {
 
 	draw(ctx: CanvasRenderingContext2D, showPolygons: boolean = true,
 		showMidpoints: boolean = false,
-		showRays: boolean = false, showMotif: boolean = true, showIntersectionPoints: boolean = false): void {
+		showRays: boolean = false, showMotif: boolean = true, showMotifFilled: boolean = false, showIntersectionPoints: boolean = false): void {
 		if (this.polygons.length === 0) return;
 
 		if (showPolygons) {
@@ -177,9 +177,9 @@ export class Tessellation {
 			}
 		}
 
-		if (showMidpoints || showRays || showMotif || showIntersectionPoints) {
+		if (showMidpoints || showRays || showMotif || showMotifFilled || showIntersectionPoints) {
 			for (const polygon of this.polygons) {
-				polygon.draw(ctx, showMidpoints, showRays, false, showMotif, showIntersectionPoints);
+				polygon.draw(ctx, showMidpoints, showRays, false, showMotif, showMotifFilled, showIntersectionPoints);
 			}
 		}
 	}

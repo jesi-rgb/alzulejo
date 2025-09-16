@@ -187,7 +187,7 @@ export class Polygon {
 	});
 
 
-	rayPairs = $derived.by(() => {
+	motif = $derived.by(() => {
 		if (this.rays.length < 2) return [];
 
 		const allPairs: RayPair[] = [];
@@ -205,7 +205,7 @@ export class Polygon {
 				(ray2.origin.x - ray1.origin.x, 2) * (ray2.origin.x - ray1.origin.x, 2) +
 				(ray2.origin.y - ray1.origin.y, 2) * (ray2.origin.y - ray1.origin.y, 2);
 
-			if (originsDistanceSquared > maxDistance * maxDistance) continue;
+			// if (originsDistanceSquared > maxDistance * maxDistance) continue;
 
 			const angleDiff = Math.abs(ray1.angle - ray2.angle);
 			const isOpposite = Math.abs(angleDiff - Math.PI) < EPSILON;
@@ -273,6 +273,84 @@ export class Polygon {
 		}
 
 		return selectedPairs;
+	});
+
+	motifPolygons = $derived.by(() => {
+		if (this.motif.length === 0) return [];
+
+		const polygons: Point[][] = [];
+		const EPSILON = 0.001;
+
+		// Helper function to check if two points are the same within epsilon
+		const pointsEqual = (p1: Point, p2: Point) =>
+			Math.abs(p1.x - p2.x) < EPSILON && Math.abs(p1.y - p2.y) < EPSILON;
+
+		// Create segments from all ray pairs
+		const segments: { start: Point, end: Point, used: boolean }[] = [];
+		for (const pair of this.motif) {
+			if (pair.clippedRay1.origin && pair.clippedRay1.endpoint) {
+				segments.push({
+					start: pair.clippedRay1.origin,
+					end: pair.clippedRay1.endpoint,
+					used: false
+				});
+			}
+			if (pair.clippedRay2.origin && pair.clippedRay2.endpoint) {
+				segments.push({
+					start: pair.clippedRay2.origin,
+					end: pair.clippedRay2.endpoint,
+					used: false
+				});
+			}
+		}
+
+		// Find connected polygons by tracing segments
+		for (let i = 0; i < segments.length; i++) {
+			if (segments[i].used) continue;
+
+			const polygon: Point[] = [];
+			let currentSegment = segments[i];
+			let currentPoint = currentSegment.start;
+
+			polygon.push(new Point(currentPoint.x, currentPoint.y));
+			currentPoint = currentSegment.end;
+			polygon.push(new Point(currentPoint.x, currentPoint.y));
+			currentSegment.used = true;
+
+			// Try to continue building the polygon by finding connecting segments
+			let foundConnection = true;
+			while (foundConnection && polygon.length < segments.length + 2) {
+				foundConnection = false;
+
+				for (let j = 0; j < segments.length; j++) {
+					if (segments[j].used) continue;
+
+					// Check if this segment connects to our current point
+					if (pointsEqual(currentPoint, segments[j].start)) {
+						currentPoint = segments[j].end;
+						polygon.push(new Point(currentPoint.x, currentPoint.y));
+						segments[j].used = true;
+						foundConnection = true;
+						break;
+					} else if (pointsEqual(currentPoint, segments[j].end)) {
+						currentPoint = segments[j].start;
+						polygon.push(new Point(currentPoint.x, currentPoint.y));
+						segments[j].used = true;
+						foundConnection = true;
+						break;
+					}
+				}
+			}
+
+			// Check if we have a closed polygon (current point connects back to start)
+			if (polygon.length >= 3 && pointsEqual(currentPoint, polygon[0])) {
+				// Remove the duplicate closing point
+				polygon.pop();
+				polygons.push(polygon);
+			}
+		}
+
+		return polygons;
 	});
 
 
@@ -396,7 +474,7 @@ export class Polygon {
 		return inside;
 	}
 
-	draw(ctx: CanvasRenderingContext2D, midpoints: boolean = false, rays: boolean = true, showPolygon: boolean = true, showMotif: boolean = false, showIntersectionPoints: boolean = false): void {
+	draw(ctx: CanvasRenderingContext2D, midpoints: boolean = false, rays: boolean = true, showPolygon: boolean = true, showMotif: boolean = false, showMotifFilled: boolean = false, showIntersectionPoints: boolean = false): void {
 		if (this.vertices.length < 2) return;
 
 		if (showPolygon) {
@@ -409,8 +487,6 @@ export class Polygon {
 			this.color(ctx);
 		}
 
-
-
 		if (showMotif) {
 			// Show clipped ray pairs (Islamic motif)
 			ctx.save();
@@ -418,7 +494,7 @@ export class Polygon {
 			ctx.strokeStyle = Canvas.computeColor(motifColor);
 			ctx.lineWidth = 2;
 
-			for (const pair of this.rayPairs) {
+			for (const pair of this.motif) {
 				if (!pair.clippedRay1.origin || !pair.clippedRay2.origin) continue;
 
 				ctx.beginPath();
@@ -432,6 +508,27 @@ export class Polygon {
 				ctx.lineTo(pair.clippedRay2.endpoint.x, pair.clippedRay2.endpoint.y);
 
 				ctx.stroke();
+			}
+			ctx.restore();
+		}
+
+		if (showMotifFilled) {
+			// Show filled motif polygons
+			ctx.save();
+			const motifColor = this.style?.motifColor ?? this.motifColor;
+			ctx.fillStyle = Canvas.computeColor(motifColor);
+			ctx.globalAlpha = .5; // Make it semi-transparent so we can see overlapping shapes
+
+			for (const polygon of this.motifPolygons) {
+				if (polygon.length < 3) continue;
+
+				ctx.beginPath();
+				ctx.moveTo(polygon[0].x, polygon[0].y);
+				for (let i = 1; i < polygon.length; i++) {
+					ctx.lineTo(polygon[i].x, polygon[i].y);
+				}
+				ctx.closePath();
+				ctx.fill();
 			}
 			ctx.restore();
 		}
@@ -468,7 +565,7 @@ export class Polygon {
 			ctx.save();
 			ctx.fillStyle = 'orange';
 			ctx.beginPath();
-			for (const pair of this.rayPairs) {
+			for (const pair of this.motif) {
 				const point = pair.intersectionPoint;
 				ctx.moveTo(point.x + 3, point.y);
 				ctx.ellipse(point.x, point.y, 3, 3, 0, 0, Math.PI * 2);
