@@ -1,15 +1,16 @@
 # Islamic Tessellation & Motif Generator
 
-A specialized TypeScript library for generating Islamic geometric patterns and tessellations, built with SvelteKit 5 and reactive geometry classes. Features advanced ray-casting algorithms for authentic Islamic motif generation.
+An interactive SvelteKit application for generating Islamic geometric patterns and tessellations. Built with Svelte 5 runes and TypeScript, featuring advanced ray-casting algorithms for authentic Islamic motif generation and a real-time interactive demo.
 
 ## Features
 
-- **Islamic Tessellations**: Triangle, square, hexagon, and octagon-square tilings
+- **Islamic Tessellations**: Triangle, square, hexagon, octagon-square, rhombitrihexagonal, and snub-square tilings
 - **Geometric Motif Generation**: Ray-based intersection algorithms for traditional Islamic patterns
 - **Reactive Geometry**: Built with Svelte 5 runes (`$state`, `$derived`) for automatic reactivity
 - **High-Performance Rendering**: Optimized canvas rendering with batch processing
-- **Interactive Demo**: Full-featured web application with real-time parameter controls
+- **Interactive Demo**: Full-featured web application with real-time parameter controls and local storage persistence
 - **Advanced Geometry Classes**: Point, Edge, Ray, and Polygon with complex intersection calculations
+- **Responsive Design**: Mobile-friendly interface with adaptive layout
 
 ## Core Classes
 
@@ -118,8 +119,31 @@ canvas.add(
   });
 </script>
 
-<canvas bind:this={canvasElement}></canvas>
+ <canvas bind:this={canvasElement}></canvas>
 ```
+
+## Interactive Demo Features
+
+The live demo provides comprehensive controls for exploring Islamic geometric patterns:
+
+### Tessellation Controls
+- **Type Selection**: Choose from 6 different tessellation patterns
+- **Size Adjustment**: Real-time size control (5-280 units)
+- **Contact Angle**: Adjust motif generation angle (0-90°)
+
+### Visualization Options
+- **Show Polygons**: Display the underlying tessellation structure
+- **Show Midpoints**: Highlight polygon edge centers
+- **Show Rays**: Display ray generation from midpoints
+- **Show Motif**: Render the Islamic geometric patterns
+- **Show Filled Motif**: Fill the motif shapes with color
+- **Show Intersection Points**: Display ray intersection calculations
+
+### Additional Features
+- **Responsive Design**: Adapts to mobile and desktop screens
+- **Local Storage**: Persists your settings between sessions
+- **Real-time Updates**: Instant visual feedback for all parameter changes
+- **Performance Stats**: Live display of polygon count and canvas dimensions
 
 ## Islamic Motif Generation
 
@@ -147,20 +171,36 @@ console.log(polygon.rayPairs.length); // Optimized ray pairs for motifs
 src/
 ├── lib/
 │   ├── core/geometry/
-│   │   ├── geometry.ts         # Vector2D utilities
-│   │   ├── point.svelte.ts     # Point, Edge, Ray classes
-│   │   ├── polygon.svelte.ts   # Polygon with Islamic motif generation
-│   │   ├── tessellation.svelte.ts # Tessellation system
-│   │   ├── style.svelte.ts     # Styling interface
-│   │   └── index.ts            # Main exports
+│   │   ├── patterns/
+│   │   │   ├── index.ts            # Pattern exports
+│   │   │   ├── types.ts            # Pattern type definitions
+│   │   │   ├── TessellationPattern.ts # Base pattern class
+│   │   │   ├── PolygonFactory.ts   # Polygon creation utilities
+│   │   │   ├── TrianglePattern.ts  # Triangle tessellation
+│   │   │   ├── SquarePattern.ts    # Square tessellation
+│   │   │   ├── HexagonPattern.ts   # Hexagon tessellation
+│   │   │   ├── OctagonSquarePattern.ts # Octagon-square tessellation
+│   │   │   ├── RhombitrihexagonalPattern.ts # Rhombitrihexagonal tessellation
+│   │   │   ├── SnubSquarePattern.ts # Snub square tessellation
+│   │   │   ├── archimedean.tl      # Archimedean tiling data
+│   │   │   └── hanbury.tl          # Hanbury pattern data
+│   │   ├── geometry.ts             # Vector2D utilities
+│   │   ├── point.svelte.ts         # Point, Edge, Ray classes
+│   │   ├── polygon.svelte.ts       # Polygon with Islamic motif generation
+│   │   ├── tessellation.svelte.ts  # Tessellation system
+│   │   ├── style.svelte.ts         # Styling interface
+│   │   └── index.ts                # Main exports
 │   ├── render/
-│   │   └── canvas.svelte.ts    # High-performance canvas system
+│   │   └── canvas.svelte.ts        # High-performance canvas system
 │   └── components/
-│       └── CanvasRenderer.svelte # Interactive demo component
+│       └── CanvasRenderer.svelte   # Interactive demo component
 ├── routes/
-│   ├── +layout.svelte          # App layout
-│   └── +page.svelte            # Interactive demo page
-└── app.css                     # Global styles
+│   ├── +layout.svelte              # App layout
+│   └── +page.svelte                # Interactive demo page
+├── app.css                         # Global styles
+├── app.d.ts                        # TypeScript declarations
+├── app.html                        # HTML template
+└── index.ts                        # Main entry point
 ```
 
 ## Tessellation Types
@@ -176,6 +216,12 @@ Honeycomb pattern where three regular hexagons meet at each vertex.
 
 ### Octagon-Square (4.8.8)
 Complex tiling where each vertex is surrounded by one square and two octagons, creating the classic Islamic geometric pattern.
+
+### Rhombitrihexagonal (3.4.6.4)
+Semi-regular tessellation combining triangles, squares, and hexagons in a complex pattern where each vertex has three different polygon types.
+
+### Snub Square (3.3.4.3.4)
+Chiral tessellation featuring squares and triangles arranged in a twisted, asymmetric pattern that creates dynamic visual movement.
 
 ## Advanced Features
 
@@ -205,10 +251,24 @@ npm install
 # Start development server
 npm run dev
 
-# Build for production  
+# Build for production
 npm run build
+
+# Preview production build
+npm run preview
 
 # Type checking
 npm run check
+
+# Type checking with watch mode
+npm run check:watch
 ```
+
+### Tech Stack
+
+- **Framework**: SvelteKit 2.22.0
+- **Language**: TypeScript 5.0.0
+- **UI Framework**: Svelte 5.0.0
+- **Build Tool**: Vite 7.0.4
+- **Styling**: Custom CSS with CSS variables
 
