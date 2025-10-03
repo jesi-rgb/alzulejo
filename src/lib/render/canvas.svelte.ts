@@ -7,6 +7,7 @@ export interface CanvasConfig {
 export class Canvas {
 	private renderables = $state<(() => void)[]>([]);
 	private renderScheduled = false;
+	private currentBackgroundColor = $state<string | undefined>(undefined);
 
 	canvas = $state<HTMLCanvasElement | null>(null);
 	ctx = $state<CanvasRenderingContext2D | null>(null);
@@ -68,19 +69,26 @@ export class Canvas {
 	private performDraw() {
 		if (!this.isReady) return;
 
-		this.clear();
+		this.clear(this.currentBackgroundColor);
 		this.renderables.forEach(render => render());
 	}
 
-	add(renderable: { draw: (ctx: CanvasRenderingContext2D, ...args: any[]) => void }, ...drawArgs: any[]) {
+	add(renderable: { draw: (ctx: CanvasRenderingContext2D, ...args: any[]) => void; backgroundColor?: string }, ...drawArgs: any[]) {
+		this.currentBackgroundColor = renderable.backgroundColor;
 		this.renderables.push(() => renderable.draw(this.ctx!, ...drawArgs));
 	}
 
-	clear() {
+	clear(backgroundColor?: string) {
 		if (!this.ctx || !this.canvas) return;
 
 		const rect = this.canvas.getBoundingClientRect();
-		this.ctx.clearRect(0, 0, rect.width, rect.height);
+		
+		if (backgroundColor) {
+			this.ctx.fillStyle = Canvas.computeColor(backgroundColor);
+			this.ctx.fillRect(0, 0, rect.width, rect.height);
+		} else {
+			this.ctx.clearRect(0, 0, rect.width, rect.height);
+		}
 	}
 
 	clearRenderables() {

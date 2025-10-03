@@ -26,8 +26,8 @@
 	}
 
 	const defaultSettings: AppSettings = {
-		tessellationType: "octagon-square",
-		size: 100,
+		tessellationType: "rhombitrihexagonal",
+		size: 90,
 		contactAngle: 45.1,
 		motifColor: "var(--primary)",
 		showPolygons: false,
@@ -43,22 +43,53 @@
 	let canvasElement: HTMLCanvasElement;
 	let resizeObserver: ResizeObserver;
 
-	const style: Style = {
-		fill: "var(--base-200)",
-		fillOpacity: 0.9,
-		stroke: "var(--accent)",
-		strokeWidth: 2.0,
+	let style = $state<Style>({
+		fill: "#2c3e50",
+		fillOpacity: 1,
+		stroke: "#1a252f",
+		strokeWidth: 1.5,
 		strokeOpacity: 1,
-		motifColor: "var(--primary)",
-	};
+		motifColor: "#e67e22",
+	});
 
-	const tessellation = new Tessellation({
-		type: "triangle",
-		size: 190,
+	let style1 = $state<Style>({
+		fill: "#34495e",
+		fillOpacity: 0.7,
+		stroke: "#1a252f",
+		strokeWidth: 1.5,
+		strokeOpacity: 1,
+		motifColor: "#819A7F",
+	});
+
+	let style2 = $state<Style>({
+		fill: "#f39c12",
+		fillOpacity: 0.7,
+		stroke: "#d68910",
+		strokeWidth: 1.5,
+		strokeOpacity: 1,
+		motifColor: "#5D7583",
+	});
+
+	let style3 = $state<Style>({
+		fill: "#27ae60",
+		fillOpacity: 0.7,
+		stroke: "#1e8449",
+		strokeWidth: 1.5,
+		strokeOpacity: 1,
+		motifColor: "#2c3e50",
+	});
+
+	let tessellation = new Tessellation({
+		type: "rhombitrihexagonal",
+		size: 90,
 		width: 400,
 		height: 300,
 		contactAngle: 22.5,
 		style: style,
+		style1: style1,
+		style2: style2,
+		style3: style3,
+		backgroundColor: "#f5f5dc",
 	});
 
 	function loadSettings(): AppSettings {
@@ -138,6 +169,11 @@
 
 	function updateVisualization() {
 		if (!canvas) return;
+
+		tessellation.style = style;
+		tessellation.style1 = style1;
+		tessellation.style2 = style2;
+		tessellation.style3 = style3;
 
 		canvas.clearRenderables();
 		canvas.add(
@@ -271,6 +307,48 @@
 								);
 								updateVisualization();
 							}}
+						/>
+					</div>
+				</div>
+			</div>
+
+			<div class="control-section">
+				<h3 class="text-info">Colors</h3>
+				<div class="color-controls">
+					<div class="color-control">
+						<label for="background-color">Background:</label>
+						<input
+							id="background-color"
+							type="color"
+							bind:value={tessellation.backgroundColor}
+							oninput={() => updateVisualization()}
+						/>
+					</div>
+					<div class="color-control">
+						<label for="style1-color">Style 1:</label>
+						<input
+							id="style1-color"
+							type="color"
+							bind:value={style1.motifColor}
+							oninput={() => updateVisualization()}
+						/>
+					</div>
+					<div class="color-control">
+						<label for="style2-color">Style 2:</label>
+						<input
+							id="style2-color"
+							type="color"
+							bind:value={style2.motifColor}
+							oninput={() => updateVisualization()}
+						/>
+					</div>
+					<div class="color-control">
+						<label for="style3-color">Style 3:</label>
+						<input
+							id="style3-color"
+							type="color"
+							bind:value={style3.motifColor}
+							oninput={() => updateVisualization()}
 						/>
 					</div>
 				</div>
@@ -514,6 +592,44 @@
 		height: 16px;
 		accent-color: var(--accent);
 		cursor: pointer;
+	}
+
+	.color-controls {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.color-control {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+	}
+
+	.color-control label {
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: var(--base-content);
+	}
+
+	.color-control input[type="color"] {
+		width: 40px;
+		height: 30px;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		background: none;
+		padding: 0;
+	}
+
+	.color-control input[type="color"]::-webkit-color-swatch-wrapper {
+		padding: 0;
+	}
+
+	.color-control input[type="color"]::-webkit-color-swatch {
+		border: 2px solid var(--base-300);
+		border-radius: 4px;
 	}
 
 	@media (max-width: 768px) {

@@ -76,7 +76,7 @@ export class RhombitrihexagonalPattern extends TessellationPattern {
 					polygonType: 'square',
 					relativeSize: squareRelativeSize,
 					rotation: Math.PI / 4,
-					styleKey: 'default'
+					styleKey: 'style3'
 				};
 
 				yield {
@@ -94,7 +94,7 @@ export class RhombitrihexagonalPattern extends TessellationPattern {
 					polygonType: 'square',
 					relativeSize: squareRelativeSize,
 					rotation: Math.PI / 12,
-					styleKey: 'default'
+					styleKey: 'style3'
 				};
 
 				yield {
@@ -103,7 +103,7 @@ export class RhombitrihexagonalPattern extends TessellationPattern {
 					polygonType: 'square',
 					relativeSize: squareRelativeSize,
 					rotation: -Math.PI / 12,
-					styleKey: 'default'
+					styleKey: 'style3'
 				};
 
 			}

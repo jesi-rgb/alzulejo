@@ -25,7 +25,9 @@ interface TessellationConfig {
 	style?: Style;
 	style1?: Style;
 	style2?: Style;
+	style3?: Style;
 	motifColor?: string;
+	backgroundColor?: string;
 }
 
 export class Tessellation {
@@ -37,9 +39,11 @@ export class Tessellation {
 	offset = $state(0);
 	contactAngle = $state(22.5);
 	motifColor = $state<string>('purple');
+	backgroundColor = $state<string>('#f5f5dc');
 	style = $state<Style>();
 	style1 = $state<Style>();
 	style2 = $state<Style>();
+	style3 = $state<Style>();
 
 	constructor(config: TessellationConfig) {
 		this.type = config.type;
@@ -50,9 +54,11 @@ export class Tessellation {
 		this.offset = config.offset ?? 0;
 		this.contactAngle = config.contactAngle ?? 22.5;
 		this.motifColor = config.motifColor ?? 'purple';
+		this.backgroundColor = config.backgroundColor ?? '#f5f5dc';
 		this.style = config.style;
 		this.style1 = config.style1;
 		this.style2 = config.style2;
+		this.style3 = config.style3;
 	}
 
 	polygons: Polygon[] = $derived.by(() => {
@@ -77,7 +83,8 @@ export class Tessellation {
 			this.motifColor,
 			this.style,
 			this.style1,
-			this.style2
+			this.style2,
+			this.style3
 		);
 
 		const polygons: Polygon[] = [];
@@ -267,6 +274,8 @@ export class Tessellation {
 
 		return `${style.fill}-${style.fillOpacity}-${style.stroke}-${style.strokeWidth}-${style.strokeOpacity}`;
 	}
+
+
 
 	private drawPolygonGroup(ctx: CanvasRenderingContext2D, polygons: Polygon[]): void {
 		if (polygons.length === 0) return;

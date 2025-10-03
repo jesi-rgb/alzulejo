@@ -517,7 +517,7 @@ export class Polygon {
 			ctx.save();
 			const motifColor = this.style?.motifColor ?? this.motifColor;
 			ctx.fillStyle = Canvas.computeColor(motifColor);
-			ctx.globalAlpha = .5; // Make it semi-transparent so we can see overlapping shapes
+			ctx.globalAlpha = this.style!.fillOpacity; // Make it semi-transparent so we can see overlapping shapes
 
 			for (const polygon of this.motifPolygons) {
 				if (polygon.length < 3) continue;

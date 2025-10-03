@@ -2,7 +2,7 @@ export interface TileDefinition {
 	polygonType: 'triangle' | 'square' | 'hexagon' | 'octagon';
 	relativeSize: number;
 	rotation?: number;
-	styleKey?: 'default' | 'style1' | 'style2';
+	styleKey?: 'default' | 'style1' | 'style2' | 'style3';
 }
 
 export interface TilePosition extends TileDefinition {

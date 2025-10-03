@@ -9,7 +9,8 @@ export class PolygonFactory {
 		private motifColor: string,
 		private defaultStyle?: Style,
 		private style1?: Style,
-		private style2?: Style
+		private style2?: Style,
+		private style3?: Style
 	) { }
 
 	create(tile: TileDefinition, x: number, y: number): Polygon {
@@ -52,6 +53,8 @@ export class PolygonFactory {
 				return this.style1 || this.defaultStyle;
 			case 'style2':
 				return this.style2 || this.defaultStyle;
+			case 'style3':
+				return this.style3 || this.defaultStyle;
 			default:
 				return this.defaultStyle;
 		}
