@@ -81,7 +81,9 @@ export class Canvas {
 		this.renderables.forEach(render => render());
 	}
 
-	add(renderable: { draw: (ctx: CanvasRenderingContext2D, ...args: any[]) => void; backgroundColor?: string; polygons?: any[] }, ...drawArgs: any[]) {
+	add(
+		renderable: { draw: (ctx: CanvasRenderingContext2D, ...args: any[]) => void; backgroundColor?: string; polygons?: any[] },
+		...drawArgs: any[]) {
 		this.currentBackgroundColor = renderable.backgroundColor;
 		this.renderables.push(() => renderable.draw(this.ctx!, ...drawArgs, this));
 
@@ -90,7 +92,20 @@ export class Canvas {
 		if (this.animationFrameId !== null) {
 			cancelAnimationFrame(this.animationFrameId);
 		}
+
 		this.startAnimationLoop();
+
+	}
+
+	update(renderable: { draw: (ctx: CanvasRenderingContext2D, ...args: any[]) => void; backgroundColor?: string; polygons?: any[] },
+		...drawArgs: any[]) {
+		this.currentBackgroundColor = renderable.backgroundColor;
+		this.renderables.push(() => renderable.draw(this.ctx!, ...drawArgs, this));
+
+		if (!this.isAnimating) {
+			this.scheduleRender()
+		}
+
 	}
 
 	clear(backgroundColor?: string) {

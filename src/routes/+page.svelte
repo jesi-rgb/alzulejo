@@ -135,7 +135,6 @@
 	) {
 		tessellation.type = type;
 		settings.tessellationType = type;
-		// saveSettings();
 		updateVisualization();
 	}
 
@@ -148,7 +147,7 @@
 		tessellation.style3 = style3;
 
 		canvas.clearRenderables();
-		canvas.add(
+		canvas.update(
 			tessellation,
 			settings.showPolygons,
 			settings.showMidpoints,
@@ -369,7 +368,6 @@
 							type="checkbox"
 							bind:checked={settings.showPolygons}
 							onchange={() => {
-								saveSettings();
 								updateVisualization();
 							}}
 						/>
@@ -380,7 +378,6 @@
 							type="checkbox"
 							bind:checked={settings.showMidpoints}
 							onchange={() => {
-								saveSettings();
 								updateVisualization();
 							}}
 						/>
@@ -391,7 +388,6 @@
 							type="checkbox"
 							bind:checked={settings.showRays}
 							onchange={() => {
-								saveSettings();
 								updateVisualization();
 							}}
 						/>
@@ -402,7 +398,6 @@
 							type="checkbox"
 							bind:checked={settings.showMotif}
 							onchange={() => {
-								saveSettings();
 								updateVisualization();
 							}}
 						/>
@@ -413,7 +408,6 @@
 							type="checkbox"
 							bind:checked={settings.showMotifFilled}
 							onchange={() => {
-								saveSettings();
 								updateVisualization();
 							}}
 						/>
@@ -424,7 +418,6 @@
 							type="checkbox"
 							bind:checked={settings.showIntersectionPoints}
 							onchange={() => {
-								saveSettings();
 								updateVisualization();
 							}}
 						/>

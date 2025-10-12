@@ -199,13 +199,10 @@ export class Polygon {
 
 			if (!ray1.origin || !ray2.origin) continue;
 
-			// // Early exit: skip rays that can't possibly intersect based on max reach
-			const maxDistance = ray1.length + ray2.length;
 			const originsDistanceSquared =
 				(ray2.origin.x - ray1.origin.x, 2) * (ray2.origin.x - ray1.origin.x, 2) +
 				(ray2.origin.y - ray1.origin.y, 2) * (ray2.origin.y - ray1.origin.y, 2);
 
-			// if (originsDistanceSquared > maxDistance * maxDistance) continue;
 
 			const angleDiff = Math.abs(ray1.angle - ray2.angle);
 			const isOpposite = Math.abs(angleDiff - Math.PI) < EPSILON;
@@ -227,7 +224,6 @@ export class Polygon {
 				continue;
 			}
 
-			// Check if rays intersect
 			const intersection = ray1.intersect(ray2);
 			if (intersection) {
 				const distAPSquared =
@@ -474,7 +470,7 @@ export class Polygon {
 		return inside;
 	}
 
-	draw(ctx: CanvasRenderingContext2D, midpoints: boolean = false, rays: boolean = true, showPolygon: boolean = true, showMotif: boolean = false, showMotifFilled: boolean = false, showIntersectionPoints: boolean = false, canvas?: any, motifStartIndex: number = 0, totalMotifs: number = 0): void {
+	draw(ctx: CanvasRenderingContext2D, midpoints: boolean = false, rays: boolean = true, showPolygon: boolean = true, showMotif: boolean = false, showMotifFilled: boolean = false, showIntersectionPoints: boolean = false, canvas?: Canvas, motifStartIndex: number = 0, totalMotifs: number = 0): void {
 		if (this.vertices.length < 2) return;
 
 		if (showPolygon) {
@@ -488,27 +484,22 @@ export class Polygon {
 		}
 
 		if (showMotif) {
-			// Show clipped ray pairs (Islamic motif)
 			ctx.save();
 			const motifColor = this.style?.motifColor ?? this.motifColor;
 			ctx.strokeStyle = Canvas.computeColor(motifColor);
 			ctx.lineWidth = 2;
 
+			ctx.beginPath();
 			for (const pair of this.motif) {
 				if (!pair.clippedRay1.origin || !pair.clippedRay2.origin) continue;
 
-				ctx.beginPath();
-
-				// Draw clipped ray1: A to P
 				ctx.moveTo(pair.clippedRay1.origin.x, pair.clippedRay1.origin.y);
 				ctx.lineTo(pair.clippedRay1.endpoint.x, pair.clippedRay1.endpoint.y);
 
-				// Draw clipped ray2: P to D  
 				ctx.moveTo(pair.clippedRay2.origin.x, pair.clippedRay2.origin.y);
 				ctx.lineTo(pair.clippedRay2.endpoint.x, pair.clippedRay2.endpoint.y);
-
-				ctx.stroke();
 			}
+			ctx.stroke();
 			ctx.restore();
 		}
 
