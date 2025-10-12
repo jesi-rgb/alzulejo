@@ -17,18 +17,18 @@ export class Style implements StyleType {
 	motifColor = $state('purple');
 
 	constructor(
-		fill: string = 'aquamarine',
-		fillOpacity: number = 1,
-		stroke: string = 'black',
-		strokeWidth: number = 1,
-		strokeOpacity: number = 1,
-		motifColor: string = 'purple',
+		fill?: string,
+		fillOpacity?: number,
+		stroke?: string,
+		strokeWidth?: number,
+		strokeOpacity?: number,
+		motifColor?: string,
 	) {
-		this.fill = fill;
-		this.fillOpacity = fillOpacity;
-		this.stroke = stroke;
-		this.strokeWidth = strokeWidth;
-		this.strokeOpacity = strokeOpacity;
-		this.motifColor = motifColor;
+		this.fill = fill ?? 'aquamarine';
+		this.fillOpacity = fillOpacity ?? 1;
+		this.stroke = stroke ?? 'black';
+		this.strokeWidth = strokeWidth ?? 1;
+		this.strokeOpacity = strokeOpacity ?? 1;
+		this.motifColor = motifColor ?? 'purple';
 	}
 }

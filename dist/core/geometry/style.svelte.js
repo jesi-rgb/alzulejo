@@ -5,12 +5,12 @@ export class Style {
     strokeWidth = $state(1);
     strokeOpacity = $state(1);
     motifColor = $state('purple');
-    constructor(fill = 'aquamarine', fillOpacity = 1, stroke = 'black', strokeWidth = 1, strokeOpacity = 1, motifColor = 'purple') {
-        this.fill = fill;
-        this.fillOpacity = fillOpacity;
-        this.stroke = stroke;
-        this.strokeWidth = strokeWidth;
-        this.strokeOpacity = strokeOpacity;
-        this.motifColor = motifColor;
+    constructor(fill, fillOpacity, stroke, strokeWidth, strokeOpacity, motifColor) {
+        this.fill = fill ?? 'aquamarine';
+        this.fillOpacity = fillOpacity ?? 1;
+        this.stroke = stroke ?? 'black';
+        this.strokeWidth = strokeWidth ?? 1;
+        this.strokeOpacity = strokeOpacity ?? 1;
+        this.motifColor = motifColor ?? 'purple';
     }
 }
