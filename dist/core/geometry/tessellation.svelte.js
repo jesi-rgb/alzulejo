@@ -1,5 +1,4 @@
 import { Polygon } from './polygon.svelte';
-import { Style } from './style.svelte';
 import { Canvas } from '../../render/canvas.svelte';
 import { TessellationPattern, PolygonFactory, HexagonPattern, TrianglePattern, SquarePattern, OctagonSquarePattern, RhombitrihexagonalPattern } from './patterns';
 import { SnubSquarePattern } from './patterns/SnubSquarePattern';

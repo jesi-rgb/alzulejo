@@ -1,5 +1,5 @@
 import { Polygon } from './polygon.svelte';
-import { Style } from './style.svelte';
+import type { Style } from './style.svelte';
 import { Canvas } from '../../render/canvas.svelte';
 import {
 	TessellationPattern,

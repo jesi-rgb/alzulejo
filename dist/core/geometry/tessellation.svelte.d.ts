@@ -1,5 +1,5 @@
 import { Polygon } from './polygon.svelte';
-import { Style } from './style.svelte';
+import type { Style } from './style.svelte';
 type TessellationType = 'triangle' | 'square' | 'hexagon' | 'octagon-square' | 'rhombitrihexagonal' | 'snub-square';
 interface TessellationConfig {
     type: TessellationType;
