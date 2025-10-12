@@ -1,231 +1,170 @@
-# Islamic Tessellation & Motif Generator
+# pattern-gen
 
-An interactive SvelteKit application for generating Islamic geometric patterns and tessellations. Built with Svelte 5 runes and TypeScript, featuring advanced ray-casting algorithms for authentic Islamic motif generation and a real-time interactive demo.
+Islamic geometric pattern and tessellation generator for Svelte 5. A powerful library for creating beautiful tessellations with reactive geometry and high-performance canvas rendering.
 
-## Features
+**[npm package](https://www.npmjs.com/package/pattern-gen)** • This repo includes both the library (in `src/lib/`) and an interactive demo application.
 
-- **Islamic Tessellations**: Triangle, square, hexagon, octagon-square, rhombitrihexagonal, and snub-square tilings
-- **Geometric Motif Generation**: Ray-based intersection algorithms for traditional Islamic patterns
-- **Reactive Geometry**: Built with Svelte 5 runes (`$state`, `$derived`) for automatic reactivity
-- **High-Performance Rendering**: Optimized canvas rendering with batch processing
-- **Interactive Demo**: Full-featured web application with real-time parameter controls and local storage persistence
-- **Advanced Geometry Classes**: Point, Edge, Ray, and Polygon with complex intersection calculations
-- **Responsive Design**: Mobile-friendly interface with adaptive layout
+## Installation
 
-## Core Classes
-
-### Point & Edge
-```ts
-import { Point, Edge } from '@lib/core/geometry';
-
-const point = new Point(100, 50);
-const edge = new Edge(new Point(0, 0), new Point(100, 100));
-
-// Reactive properties
-console.log(edge.midpoint);  // Automatically calculated
-console.log(edge.angle);     // Edge angle in radians
-console.log(edge.magnitude); // Edge length
+```bash
+npm install pattern-gen
+# or
+pnpm add pattern-gen
+# or
+bun add pattern-gen
 ```
 
-### Polygon with Islamic Motifs
-```ts
-import { Polygon } from '@lib/core/geometry';
-
-// Create regular polygons
-const hexagon = Polygon.hexagon(100, 250, 200);
-const octagon = Polygon.octagon(80, 400, 300);
-
-// Configure for Islamic motif generation
-hexagon.contactAngle = 22.5; // Contact angle for ray generation
-
-// Access computed Islamic geometry
-console.log(hexagon.rays);      // Generated rays from edge midpoints
-console.log(hexagon.rayPairs);  // Optimized ray pairs for motifs
-console.log(hexagon.apothem);   // Distance from center to edge
-```
-
-### Tessellation System
-```ts
-import { Tessellation } from '@lib/core/geometry';
-
-const tessellation = new Tessellation({
-  type: 'hexagon',
-  size: 100,
-  width: 800,
-  height: 600,
-  spacing: 5,
-  contactAngle: 22.5,
-  style: {
-    fill: 'var(--accent)',
-    fillOpacity: 0.9,
-    stroke: 'black',
-    strokeWidth: 1
-  }
-});
-
-// Available tessellation types
-// - 'triangle': Triangular tiling with alternating orientations
-// - 'square': Square grid tessellation
-// - 'hexagon': Honeycomb hexagonal tiling
-// - 'octagon-square': Mixed octagon and square (4.8.8) tiling
-```
-
-### Canvas System
-```ts
-import { Canvas } from '@lib/render/canvas.svelte';
-
-const canvas = new Canvas();
-canvas.setup(canvasElement);
-
-// Render tessellation with Islamic motifs
-canvas.add(
-  tessellation,
-  true,   // showPolygons
-  false,  // showMidpoints  
-  false,  // showRays
-  true,   // showMotif (Islamic patterns)
-  false   // showIntersectionPoints
-);
-```
-
-## Interactive Demo Usage
+## Quick Start
 
 ```svelte
 <script>
+  import { PatternCanvas } from 'pattern-gen';
+</script>
+
+<PatternCanvas 
+  type="hexagon" 
+  size={100} 
+  contactAngle={22.5}
+  backgroundColor="#f5f5dc"
+  showMotifFilled={true}
+/>
+
+<style>
+  :global(canvas) {
+    width: 100%;
+    height: 600px;
+  }
+</style>
+```
+
+## Features
+
+- **6 Tessellation Types**: Triangle, square, hexagon, octagon-square, rhombitrihexagonal, and snub-square tilings
+- **Islamic Motif Generation**: Ray-based intersection algorithms for traditional Islamic patterns
+- **Fully Reactive**: Built with Svelte 5 runes (`$state`, `$derived`) - all properties automatically update the canvas
+- **High-Performance Rendering**: Optimized canvas rendering with batch processing and animations
+- **TypeScript**: Full type definitions included
+- **Zero Configuration**: Simple API that gets out of your way
+
+## Library Usage
+
+### Simple Component API
+
+The easiest way to use the library:
+
+```svelte
+<script>
+  import { PatternCanvas } from 'pattern-gen';
+</script>
+
+<PatternCanvas 
+  type="rhombitrihexagonal" 
+  size={90}
+  contactAngle={22.5}
+  backgroundColor="#f5f5dc"
+  showMotifFilled={true}
+  style={{
+    fill: '#2c3e50',
+    fillOpacity: 1,
+    stroke: '#1a252f',
+    strokeWidth: 1.5
+  }}
+/>
+```
+
+### Advanced: Using Core Classes
+
+For more control, use the `Canvas` and `Tessellation` classes directly:
+
+```svelte
+<script lang="ts">
   import { onMount } from 'svelte';
-  import { Tessellation } from '@lib/core/geometry';
-  import { Canvas } from '@lib/render/canvas.svelte';
+  import { Canvas, Tessellation } from 'pattern-gen';
   
-  let canvas = new Canvas();
   let canvasElement: HTMLCanvasElement;
+  let canvas: Canvas;
   
   const tessellation = new Tessellation({
-    type: 'triangle',
-    size: 150,
+    type: 'hexagon',
+    size: 100,
     width: 800,
     height: 600,
     contactAngle: 22.5,
+    backgroundColor: '#f5f5dc',
     style: {
-      fill: '#2563eb',
-      fillOpacity: 0.8,
-      stroke: '#1e40af',
-      strokeWidth: 2
+      fill: '#2c3e50',
+      fillOpacity: 1,
+      stroke: '#1a252f',
+      strokeWidth: 1.5
     }
   });
   
   onMount(() => {
+    canvas = new Canvas();
     canvas.setup(canvasElement);
-    canvas.add(tessellation, true, false, false, true, false);
+    
+    canvas.add(
+      tessellation,
+      false,  // showPolygons
+      false,  // showMidpoints
+      false,  // showRays
+      false,  // showMotif
+      true,   // showMotifFilled
+      false   // showIntersectionPoints
+    );
   });
 </script>
 
- <canvas bind:this={canvasElement}></canvas>
+<canvas bind:this={canvasElement} style="width: 100%; height: 600px;"></canvas>
 ```
 
-## Interactive Demo Features
+### Reactive Updates
 
-The live demo provides comprehensive controls for exploring Islamic geometric patterns:
+All properties are reactive thanks to Svelte 5 runes:
 
-### Tessellation Controls
-- **Type Selection**: Choose from 6 different tessellation patterns
-- **Size Adjustment**: Real-time size control (5-280 units)
-- **Contact Angle**: Adjust motif generation angle (0-90°)
-
-### Visualization Options
-- **Show Polygons**: Display the underlying tessellation structure
-- **Show Midpoints**: Highlight polygon edge centers
-- **Show Rays**: Display ray generation from midpoints
-- **Show Motif**: Render the Islamic geometric patterns
-- **Show Filled Motif**: Fill the motif shapes with color
-- **Show Intersection Points**: Display ray intersection calculations
-
-### Additional Features
-- **Responsive Design**: Adapts to mobile and desktop screens
-- **Local Storage**: Persists your settings between sessions
-- **Real-time Updates**: Instant visual feedback for all parameter changes
-- **Performance Stats**: Live display of polygon count and canvas dimensions
-
-## Islamic Motif Generation
-
-The library uses sophisticated geometric algorithms to generate authentic Islamic motifs:
-
-1. **Ray Generation**: Creates rays from polygon edge midpoints at specified contact angles
-2. **Intersection Calculation**: Finds optimal ray intersections using distance minimization
-3. **Motif Optimization**: Pairs rays to create balanced, symmetrical patterns
-4. **Batch Rendering**: Groups polygons by style for optimal performance
-
-### Ray System
-```ts
-// Each polygon generates rays for Islamic motif creation
-const polygon = Polygon.hexagon(100);
-polygon.contactAngle = 30; // Angle in degrees
-
-// Access generated rays and intersections
-console.log(polygon.rays.length);     // Number of rays generated
-console.log(polygon.rayPairs.length); // Optimized ray pairs for motifs
+```svelte
+<script>
+  import { Tessellation } from 'pattern-gen';
+  
+  const tessellation = new Tessellation({
+    type: 'hexagon',
+    size: 100,
+    width: 800,
+    height: 600
+  });
+  
+  // Just change the property - canvas updates automatically!
+  function changePattern() {
+    tessellation.type = 'triangle';
+    tessellation.size = 150;
+    tessellation.contactAngle = 45;
+  }
+</script>
 ```
 
-## Project Structure
+## API Reference
 
-```
-src/
-├── lib/
-│   ├── core/geometry/
-│   │   ├── patterns/
-│   │   │   ├── index.ts            # Pattern exports
-│   │   │   ├── types.ts            # Pattern type definitions
-│   │   │   ├── TessellationPattern.ts # Base pattern class
-│   │   │   ├── PolygonFactory.ts   # Polygon creation utilities
-│   │   │   ├── TrianglePattern.ts  # Triangle tessellation
-│   │   │   ├── SquarePattern.ts    # Square tessellation
-│   │   │   ├── HexagonPattern.ts   # Hexagon tessellation
-│   │   │   ├── OctagonSquarePattern.ts # Octagon-square tessellation
-│   │   │   ├── RhombitrihexagonalPattern.ts # Rhombitrihexagonal tessellation
-│   │   │   ├── SnubSquarePattern.ts # Snub square tessellation
-│   │   │   ├── archimedean.tl      # Archimedean tiling data
-│   │   │   └── hanbury.tl          # Hanbury pattern data
-│   │   ├── geometry.ts             # Vector2D utilities
-│   │   ├── point.svelte.ts         # Point, Edge, Ray classes
-│   │   ├── polygon.svelte.ts       # Polygon with Islamic motif generation
-│   │   ├── tessellation.svelte.ts  # Tessellation system
-│   │   ├── style.svelte.ts         # Styling interface
-│   │   └── index.ts                # Main exports
-│   ├── render/
-│   │   └── canvas.svelte.ts        # High-performance canvas system
-│   └── components/
-│       └── CanvasRenderer.svelte   # Interactive demo component
-├── routes/
-│   ├── +layout.svelte              # App layout
-│   └── +page.svelte                # Interactive demo page
-├── app.css                         # Global styles
-├── app.d.ts                        # TypeScript declarations
-├── app.html                        # HTML template
-└── index.ts                        # Main entry point
-```
+### PatternCanvas Props
 
-## Tessellation Types
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `type` | `'triangle' \| 'square' \| 'hexagon' \| 'octagon-square' \| 'rhombitrihexagonal' \| 'snub-square'` | `'hexagon'` | Tessellation pattern type |
+| `size` | `number` | `100` | Pattern size in pixels |
+| `width` | `number` | `800` | Canvas width |
+| `height` | `number` | `600` | Canvas height |
+| `contactAngle` | `number` | `22.5` | Motif generation angle (0-90°) |
+| `backgroundColor` | `string` | `'#f5f5dc'` | Canvas background color |
+| `showPolygons` | `boolean` | `false` | Display polygon outlines |
+| `showMidpoints` | `boolean` | `false` | Show edge midpoints |
+| `showRays` | `boolean` | `false` | Show generated rays |
+| `showMotif` | `boolean` | `false` | Show motif outlines |
+| `showMotifFilled` | `boolean` | `true` | Show filled motifs |
+| `showIntersectionPoints` | `boolean` | `false` | Show ray intersections |
+| `style`, `style1`, `style2`, `style3` | `Style` | - | Style objects for polygon types |
+| `class` | `string` | `''` | Additional CSS class |
 
-### Triangle (3.3.3.3.3.3)
-Triangular tiling with alternating upward and downward orientations, creating a pattern where six triangles meet at each vertex.
+### Style Interface
 
-### Square (4.4.4.4) 
-Regular square grid tessellation where four squares meet at each vertex.
-
-### Hexagon (6.6.6)
-Honeycomb pattern where three regular hexagons meet at each vertex.
-
-### Octagon-Square (4.8.8)
-Complex tiling where each vertex is surrounded by one square and two octagons, creating the classic Islamic geometric pattern.
-
-### Rhombitrihexagonal (3.4.6.4)
-Semi-regular tessellation combining triangles, squares, and hexagons in a complex pattern where each vertex has three different polygon types.
-
-### Snub Square (3.3.4.3.4)
-Chiral tessellation featuring squares and triangles arranged in a twisted, asymmetric pattern that creates dynamic visual movement.
-
-## Advanced Features
-
-### Style System
 ```ts
 interface Style {
   fill?: string;
@@ -233,42 +172,101 @@ interface Style {
   stroke?: string;
   strokeWidth?: number;
   strokeOpacity?: number;
+  motifColor?: string;
 }
 ```
 
-### Performance Optimizations
-- **Batch Rendering**: Groups shapes by style to minimize context switches
-- **High-DPI Support**: Automatic device pixel ratio handling
-- **Reactive Updates**: Only redraws when geometry actually changes
-- **Memory Management**: Efficient polygon and ray generation algorithms
+## Tessellation Types
 
-## Development
+| Type | Notation | Description |
+|------|----------|-------------|
+| **Triangle** | (3.3.3.3.3.3) | Triangular tiling with alternating orientations |
+| **Square** | (4.4.4.4) | Regular square grid |
+| **Hexagon** | (6.6.6) | Honeycomb pattern |
+| **Octagon-Square** | (4.8.8) | Mixed octagon and square tiling |
+| **Rhombitrihexagonal** | (3.4.6.4) | Complex pattern with triangles, squares, and hexagons |
+| **Snub Square** | (3.3.4.3.4) | Chiral tessellation with dynamic movement |
+
+## How It Works
+
+The library uses sophisticated geometric algorithms:
+
+1. **Tessellation Generation**: Generates polygon positions based on mathematical tiling patterns
+2. **Ray-Based Motifs**: Creates rays from polygon edge midpoints at the specified contact angle
+3. **Intersection Calculation**: Finds optimal ray intersections to create Islamic motif patterns
+4. **Batch Rendering**: Groups polygons by style for optimal canvas performance
+5. **Animation System**: Staggered animations with configurable duration and delay
+
+### Performance Features
+
+- **High-DPI Support**: Automatic device pixel ratio handling
+- **Reactive Updates**: Only redraws when geometry actually changes (thanks to Svelte 5 runes)
+- **Batch Processing**: Minimizes canvas context switches
+- **Memory Efficient**: Optimized polygon and ray generation algorithms
+
+## Development & Demo
+
+This repository contains both the library and an interactive demo app.
+
+### Running the Demo
 
 ```bash
 # Install dependencies
-npm install
+bun install
 
 # Start development server
-npm run dev
+bun run dev
 
-# Build for production
-npm run build
+# Build the demo
+bun run build
 
-# Preview production build
-npm run preview
-
-# Type checking
-npm run check
-
-# Type checking with watch mode
-npm run check:watch
+# Preview demo build
+bun run preview
 ```
 
-### Tech Stack
+### Building the Library
 
-- **Framework**: SvelteKit 2.22.0
-- **Language**: TypeScript 5.0.0
-- **UI Framework**: Svelte 5.0.0
-- **Build Tool**: Vite 7.0.4
-- **Styling**: Custom CSS with CSS variables
+```bash
+# Build library package
+bun run package
+
+# Type checking
+bun run check
+```
+
+### Publishing to npm
+
+```bash
+# Build and publish
+bun run package
+npm publish
+```
+
+## Project Structure
+
+```
+src/
+├── lib/                      # 📦 Library code (gets published)
+│   ├── PatternCanvas.svelte  # Simple wrapper component
+│   ├── core/geometry/        # Tessellation & geometry classes
+│   ├── render/               # Canvas rendering system
+│   └── index.ts              # Public API exports
+└── routes/                   # 🎨 Demo application (not published)
+    └── +page.svelte          # Interactive demo with controls
+```
+
+## Tech Stack
+
+- **Svelte 5** with runes for reactivity
+- **TypeScript** with full type definitions
+- **SvelteKit** for demo and library packaging
+- **Canvas API** for high-performance rendering
+
+## License
+
+MIT
+
+## Author
+
+Jesús Rascón
 

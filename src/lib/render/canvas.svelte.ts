@@ -8,6 +8,12 @@ export class Canvas {
 	private renderables = $state<(() => void)[]>([]);
 	private renderScheduled = false;
 	private currentBackgroundColor = $state<string | undefined>(undefined);
+	private animationStartTime: number | null = null;
+	private isAnimating = false;
+	private animationFrameId: number | null = null;
+
+	animationDuration = $state(400);
+	staggerDelay = $state(400);
 
 	canvas = $state<HTMLCanvasElement | null>(null);
 	ctx = $state<CanvasRenderingContext2D | null>(null);
@@ -31,8 +37,10 @@ export class Canvas {
 	private scheduleRender() {
 		if (this.renderScheduled) return;
 
+		this.renderScheduled = true;
 		requestAnimationFrame(() => {
 			this.performDraw();
+			this.renderScheduled = false;
 		})
 	}
 
@@ -73,16 +81,23 @@ export class Canvas {
 		this.renderables.forEach(render => render());
 	}
 
-	add(renderable: { draw: (ctx: CanvasRenderingContext2D, ...args: any[]) => void; backgroundColor?: string }, ...drawArgs: any[]) {
+	add(renderable: { draw: (ctx: CanvasRenderingContext2D, ...args: any[]) => void; backgroundColor?: string; polygons?: any[] }, ...drawArgs: any[]) {
 		this.currentBackgroundColor = renderable.backgroundColor;
-		this.renderables.push(() => renderable.draw(this.ctx!, ...drawArgs));
+		this.renderables.push(() => renderable.draw(this.ctx!, ...drawArgs, this));
+
+		this.animationStartTime = performance.now();
+		this.isAnimating = true;
+		if (this.animationFrameId !== null) {
+			cancelAnimationFrame(this.animationFrameId);
+		}
+		this.startAnimationLoop();
 	}
 
 	clear(backgroundColor?: string) {
 		if (!this.ctx || !this.canvas) return;
 
 		const rect = this.canvas.getBoundingClientRect();
-		
+
 		if (backgroundColor) {
 			this.ctx.fillStyle = Canvas.computeColor(backgroundColor);
 			this.ctx.fillRect(0, 0, rect.width, rect.height);
@@ -130,5 +145,37 @@ export class Canvas {
 		}
 
 		return color;
+	}
+
+	private startAnimationLoop() {
+		if (!this.isReady) return;
+
+		const animate = () => {
+			this.performDraw();
+
+			if (this.isAnimating) {
+				this.animationFrameId = requestAnimationFrame(animate);
+			}
+		};
+
+		this.animationFrameId = requestAnimationFrame(animate);
+	}
+
+	getAnimationProgress(shapeIndex: number, totalShapes: number): number {
+		if (!this.animationStartTime || !this.isAnimating) return 1;
+
+		const elapsed = performance.now() - this.animationStartTime;
+		const delay = (shapeIndex / totalShapes) * this.staggerDelay;
+		const shapeElapsed = elapsed - delay;
+
+		if (shapeElapsed <= 0) return 0;
+		if (shapeElapsed >= this.animationDuration) {
+			if (shapeIndex === totalShapes - 1) {
+				this.isAnimating = false;
+			}
+			return 1;
+		}
+
+		return shapeElapsed / this.animationDuration;
 	}
 }

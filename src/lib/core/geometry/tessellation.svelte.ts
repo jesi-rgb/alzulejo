@@ -130,7 +130,7 @@ export class Tessellation {
 
 	draw(ctx: CanvasRenderingContext2D, showPolygons: boolean = true,
 		showMidpoints: boolean = false,
-		showRays: boolean = false, showMotif: boolean = true, showMotifFilled: boolean = false, showIntersectionPoints: boolean = false): void {
+		showRays: boolean = false, showMotif: boolean = true, showMotifFilled: boolean = false, showIntersectionPoints: boolean = false, canvas?: any): void {
 		if (this.polygons.length === 0) return;
 
 		if (showPolygons) {
@@ -142,16 +142,21 @@ export class Tessellation {
 		}
 
 		if (showMidpoints || showRays || showMotif || showMotifFilled || showIntersectionPoints) {
-			for (const polygon of this.polygons) {
-				polygon.draw(ctx, showMidpoints, showRays, false, showMotif, showMotifFilled, showIntersectionPoints);
+			let motifIndex = 0;
+			const totalMotifs = showMotifFilled 
+				? this.polygons.reduce((sum, p) => sum + p.motifPolygons.length, 0)
+				: 0;
+
+			for (let i = 0; i < this.polygons.length; i++) {
+				this.polygons[i].draw(ctx, showMidpoints, showRays, false, showMotif, showMotifFilled, showIntersectionPoints, canvas, motifIndex, totalMotifs);
+				if (showMotifFilled) {
+					motifIndex += this.polygons[i].motifPolygons.length;
+				}
 			}
 		}
 	}
 
-	_draw(ctx: CanvasRenderingContext2D): void {
-		if (this.polygons.length === 0) return;
-		this.polygons.forEach(polygon => polygon.draw(ctx));
-	}
+
 
 
 	private groupPolygonsByStyle(): Map<string, Polygon[]> {
@@ -180,29 +185,27 @@ export class Tessellation {
 	private drawPolygonGroup(ctx: CanvasRenderingContext2D, polygons: Polygon[]): void {
 		if (polygons.length === 0) return;
 
-		const batchPath = new Path2D();
-
 		for (const polygon of polygons) {
 			if (polygon.vertices.length < 2) continue;
 
-			batchPath.moveTo(polygon.vertices[0].x, polygon.vertices[0].y);
+			const path = new Path2D();
+			path.moveTo(polygon.vertices[0].x, polygon.vertices[0].y);
 			for (let i = 1; i < polygon.vertices.length; i++) {
-				batchPath.lineTo(polygon.vertices[i].x, polygon.vertices[i].y);
+				path.lineTo(polygon.vertices[i].x, polygon.vertices[i].y);
 			}
-			batchPath.closePath();
+			path.closePath();
+
+			const fillColor = polygon.style?.fill ?? 'aquamarine';
+			const strokeColor = polygon.style?.stroke ?? 'white';
+			const fillOpacity = polygon.style?.fillOpacity ?? 1;
+			const strokeOpacity = polygon.style?.strokeOpacity ?? 1;
+
+			ctx.fillStyle = Canvas.applyOpacity(Canvas.computeColor(fillColor), fillOpacity, ctx);
+			ctx.strokeStyle = Canvas.applyOpacity(Canvas.computeColor(strokeColor), strokeOpacity, ctx);
+			ctx.lineWidth = polygon.style?.strokeWidth ?? 1;
+
+			ctx.fill(path);
+			ctx.stroke(path);
 		}
-
-		const firstPolygon = polygons[0];
-		const fillColor = firstPolygon.style?.fill ?? 'aquamarine';
-		const strokeColor = firstPolygon.style?.stroke ?? 'white';
-		const fillOpacity = firstPolygon.style?.fillOpacity ?? 1;
-		const strokeOpacity = firstPolygon.style?.strokeOpacity ?? 1;
-
-		ctx.fillStyle = Canvas.applyOpacity(Canvas.computeColor(fillColor), fillOpacity, ctx);
-		ctx.strokeStyle = Canvas.applyOpacity(Canvas.computeColor(strokeColor), strokeOpacity, ctx);
-		ctx.lineWidth = firstPolygon.style?.strokeWidth ?? 1;
-
-		ctx.fill(batchPath);
-		ctx.stroke(batchPath);
 	}
 }

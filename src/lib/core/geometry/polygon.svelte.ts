@@ -474,7 +474,7 @@ export class Polygon {
 		return inside;
 	}
 
-	draw(ctx: CanvasRenderingContext2D, midpoints: boolean = false, rays: boolean = true, showPolygon: boolean = true, showMotif: boolean = false, showMotifFilled: boolean = false, showIntersectionPoints: boolean = false): void {
+	draw(ctx: CanvasRenderingContext2D, midpoints: boolean = false, rays: boolean = true, showPolygon: boolean = true, showMotif: boolean = false, showMotifFilled: boolean = false, showIntersectionPoints: boolean = false, canvas?: any, motifStartIndex: number = 0, totalMotifs: number = 0): void {
 		if (this.vertices.length < 2) return;
 
 		if (showPolygon) {
@@ -484,7 +484,7 @@ export class Polygon {
 				ctx.lineTo(this.vertices[i].x, this.vertices[i].y);
 			}
 			ctx.closePath();
-			this.color(ctx);
+			this.color(ctx, 1);
 		}
 
 		if (showMotif) {
@@ -513,19 +513,26 @@ export class Polygon {
 		}
 
 		if (showMotifFilled) {
-			// Show filled motif polygons
 			ctx.save();
 			const motifColor = this.style?.motifColor ?? this.motifColor;
-			ctx.fillStyle = Canvas.computeColor(motifColor);
-			ctx.globalAlpha = this.style!.fillOpacity; // Make it semi-transparent so we can see overlapping shapes
+			const baseOpacity = this.style!.fillOpacity;
 
-			for (const polygon of this.motifPolygons) {
+			for (let i = 0; i < this.motifPolygons.length; i++) {
+				const polygon = this.motifPolygons[i];
 				if (polygon.length < 3) continue;
+
+				const motifIndex = motifStartIndex + i;
+				const animationProgress = (canvas && typeof canvas.getAnimationProgress === 'function')
+					? canvas.getAnimationProgress(motifIndex, totalMotifs)
+					: 1;
+
+				ctx.globalAlpha = baseOpacity * animationProgress;
+				ctx.fillStyle = Canvas.computeColor(motifColor);
 
 				ctx.beginPath();
 				ctx.moveTo(polygon[0].x, polygon[0].y);
-				for (let i = 1; i < polygon.length; i++) {
-					ctx.lineTo(polygon[i].x, polygon[i].y);
+				for (let j = 1; j < polygon.length; j++) {
+					ctx.lineTo(polygon[j].x, polygon[j].y);
 				}
 				ctx.closePath();
 				ctx.fill();
@@ -576,11 +583,13 @@ export class Polygon {
 
 	}
 
-	color(ctx: CanvasRenderingContext2D): void {
+	color(ctx: CanvasRenderingContext2D, animationProgress: number = 1): void {
 		const fillColor = this.style?.fill ?? 'aquamarine';
 		const strokeColor = this.style?.stroke ?? 'white';
-		const fillOpacity = this.style?.fillOpacity ?? 1;
-		const strokeOpacity = this.style?.strokeOpacity ?? 1;
+		const baseFillOpacity = this.style?.fillOpacity ?? 1;
+		const baseStrokeOpacity = this.style?.strokeOpacity ?? 1;
+		const fillOpacity = baseFillOpacity * animationProgress;
+		const strokeOpacity = baseStrokeOpacity * animationProgress;
 
 		ctx.fillStyle = Canvas.applyOpacity(Canvas.computeColor(fillColor), fillOpacity, ctx);
 		ctx.strokeStyle = Canvas.applyOpacity(Canvas.computeColor(strokeColor), strokeOpacity, ctx);

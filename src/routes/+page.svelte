@@ -27,7 +27,7 @@
 
 	const defaultSettings: AppSettings = {
 		tessellationType: "rhombitrihexagonal",
-		size: 90,
+		size: 40,
 		contactAngle: 45.1,
 		motifColor: "var(--primary)",
 		showPolygons: false,
@@ -91,34 +91,6 @@
 		style3: style3,
 		backgroundColor: "#f5f5dc",
 	});
-
-	function loadSettings(): AppSettings {
-		if (!browser) return { ...defaultSettings };
-
-		try {
-			const stored = localStorage.getItem("pattern-gen-settings");
-			if (stored) {
-				const parsed = JSON.parse(stored);
-				return { ...defaultSettings, ...parsed };
-			}
-		} catch (error) {
-			console.warn("Failed to load settings from localStorage:", error);
-		}
-		return { ...defaultSettings };
-	}
-
-	function saveSettings() {
-		if (!browser) return;
-
-		try {
-			localStorage.setItem(
-				"pattern-gen-settings",
-				JSON.stringify(settings),
-			);
-		} catch (error) {
-			console.warn("Failed to save settings to localStorage:", error);
-		}
-	}
 
 	function initializeCanvas() {
 		if (!canvas || !canvasElement) return;
@@ -311,6 +283,41 @@
 					</div>
 				</div>
 			</div>
+
+			{#if canvas}
+				<div class="control-section">
+					<h3 class="text-secondary">Animation</h3>
+					<div class="slider-controls">
+						<div class="slider-control">
+							<label for="animation-duration"
+								>Duration: {canvas.animationDuration}ms</label
+							>
+							<input
+								id="animation-duration"
+								type="range"
+								min="100"
+								max="3000"
+								step="50"
+								bind:value={canvas.animationDuration}
+							/>
+						</div>
+
+						<div class="slider-control">
+							<label for="stagger-delay"
+								>Stagger: {canvas.staggerDelay}ms</label
+							>
+							<input
+								id="stagger-delay"
+								type="range"
+								min="0"
+								max="2500"
+								step="10"
+								bind:value={canvas.staggerDelay}
+							/>
+						</div>
+					</div>
+				</div>
+			{/if}
 
 			<div class="control-section">
 				<h3 class="text-info">Colors</h3>
