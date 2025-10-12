@@ -524,32 +524,32 @@
 
 	.slider-control input[type="range"] {
 		width: 100%;
-		height: 8px;
-		border-radius: 4px;
-		background: var(--base-300);
+		height: 7px;
+		border-radius: 5px;
+		background: var(--base-200);
 		outline: none;
 		-webkit-appearance: none;
+		opacity: 0.9;
 	}
 
 	.slider-control input[type="range"]::-webkit-slider-thumb {
 		appearance: none;
-		width: 20px;
-		height: 20px;
+		width: 15px;
+		height: 15px;
 		border-radius: 50%;
-		background: var(--accent);
+		background: var(--base-100);
 		cursor: pointer;
-		border: 2px solid var(--accent-content);
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 	}
 
 	.slider-control input[type="range"]::-moz-range-thumb {
-		width: 20px;
-		height: 20px;
+		width: 22px;
+		height: 22px;
 		border-radius: 50%;
-		background: var(--accent);
+		background: var(--base-100);
 		cursor: pointer;
-		border: 2px solid var(--accent-content);
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+		border: 3px solid var(--accent);
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 	}
 
 	.info {

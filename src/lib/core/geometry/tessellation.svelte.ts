@@ -45,6 +45,18 @@ export class Tessellation {
 	style2 = $state<Style>();
 	style3 = $state<Style>();
 
+	polygons: Polygon[] = $derived.by(() => {
+		const newSystemTypes = ['triangle', 'square', 'hexagon', 'octagon-square', 'rhombitrihexagonal', 'snub-square'];
+		if (newSystemTypes.includes(this.type)) {
+			return this.generateFromPattern();
+		}
+
+		// Fallback for any remaining old system types
+		return [];
+	});
+
+	num_elements = $derived(this.polygons.length)
+
 	constructor(config: TessellationConfig) {
 		this.type = config.type;
 		this.size = config.size;
@@ -61,17 +73,6 @@ export class Tessellation {
 		this.style3 = config.style3;
 	}
 
-	polygons: Polygon[] = $derived.by(() => {
-		const newSystemTypes = ['triangle', 'square', 'hexagon', 'octagon-square', 'rhombitrihexagonal', 'snub-square'];
-		if (newSystemTypes.includes(this.type)) {
-			return this.generateFromPattern();
-		}
-
-		// Fallback for any remaining old system types
-		return [];
-	});
-
-	num_elements = $derived(this.polygons.length)
 
 	private generateFromPattern(): Polygon[] {
 		const pattern = this.getPattern();
@@ -95,6 +96,10 @@ export class Tessellation {
 			polygons.push(polygon);
 		}
 
+		// if (this.rosette) {
+		// 	return new RosetteTransform(this);
+		// }
+
 		return polygons;
 	}
 
@@ -117,59 +122,11 @@ export class Tessellation {
 		}
 	}
 
-	private generateRhombitrihexagonalTessellation(): Polygon[] {
-		const polygons: Polygon[] = [];
-
-		// For rhombitrihexagonal tiling, calculate edge length
-		const edgeLength = this.size;
-
-		// Pattern dimensions based on geometric constraints
-		// In this tiling, the hexagon is regular and all edges have the same length
-		const sqrt3 = Math.sqrt(3);
-		const hexWidth = edgeLength
-		const hexHeight = Polygon.hexagonBySideLength(edgeLength).apothem
-		const triHeight = Polygon.triangleBySideLength(edgeLength).height
-
-		const squareHeight = Polygon.squareBySideLength(edgeLength).apothem
-
-		// The fundamental repeating unit
-		const unitWidth = (squareHeight + hexWidth + triHeight) * 3;
-		const unitHeight = (squareHeight + hexHeight) * 2
-
-		for (let row = 0; row < Math.ceil(this.height / unitHeight) + 2; row++) {
-			for (let col = 0; col < Math.ceil(this.width / unitWidth) + 2; col++) {
-				const baseX = col * unitWidth;
-				const baseY = row * unitHeight;
-
-				// Create hexagons at regular grid positions
-				const hexagon = Polygon.hexagonBySideLength(edgeLength, baseX, baseY).rotate(Math.PI / 6);
-				hexagon.contactAngle = this.contactAngle;
-				hexagon.motifColor = this.motifColor;
-				if (this.style) hexagon.style = this.style;
-				polygons.push(hexagon);
-
-
-				const leftTriangle = Polygon.triangleBySideLength(
-					edgeLength,
-					edgeLength + triHeight, baseY)
-					.rotate(-Math.PI / 2);
-				leftTriangle.contactAngle = this.contactAngle;
-				leftTriangle.motifColor = this.motifColor;
-				if (this.style2) leftTriangle.style = this.style2;
-				else if (this.style) leftTriangle.style = this.style;
-				polygons.push(leftTriangle);
-
-			}
-		}
-
-		return polygons;
-	}
-
-	bounds = $derived(() => ({
+	bounds = $derived({
 		width: this.width,
 		height: this.height,
 		polygonCount: this.polygons.length
-	}));
+	});
 
 	draw(ctx: CanvasRenderingContext2D, showPolygons: boolean = true,
 		showMidpoints: boolean = false,
@@ -196,63 +153,6 @@ export class Tessellation {
 		this.polygons.forEach(polygon => polygon.draw(ctx));
 	}
 
-
-	private generateOctagonSquareTessellation(): Polygon[] {
-		const polygons: Polygon[] = [];
-
-		// For 4.8.8 tiling: each vertex has square + octagon + octagon
-		// Regular octagon inscribed radius to edge length ratio is 1 / (2 * tan(π/8))
-		// For proper fit: octagon_radius = square_size / (1 + sqrt(2))
-		const octagonRadius = this.size;
-		const octagonSideLength = Polygon.regular(8, this.size).edges[0].magnitude;
-		const squareSize = octagonSideLength;
-
-		// Calculate spacing between pattern units
-		const octagonWidth = octagonRadius * 2 * Math.cos(Math.PI / 8);
-		const octagonApothem = Polygon.octagon(octagonRadius).apothem;
-
-		const stepX = octagonWidth + squareSize;
-		const stepY = octagonApothem * 2 + squareSize;
-
-		let rowIndex = 0;
-		for (let y = -stepY; y < this.height + stepY; y += stepY) {
-			let colIndex = 0;
-			for (let x = -stepX; x < this.width + stepX; x += stepX) {
-				const octagon = Polygon.octagon(octagonRadius, x + stepX / 2, y + stepY / 2).rotate(Math.PI / 8);
-				octagon.contactAngle = this.contactAngle;
-				octagon.motifColor = this.motifColor;
-				if (this.style1) octagon.style = this.style1;
-				else if (this.style) octagon.style = this.style;
-				polygons.push(octagon);
-
-				const octagon2 = Polygon.octagon(octagonRadius, x + stepX, y - stepY).rotate(Math.PI / 8);
-				octagon2.contactAngle = this.contactAngle;
-				octagon2.motifColor = this.motifColor;
-				if (this.style1) octagon2.style = this.style1;
-				else if (this.style) octagon2.style = this.style;
-				polygons.push(octagon2);
-
-				const topSquare = Polygon.squareBySideLength(octagonSideLength, x + stepX / 2, y).rotate(Math.PI / 4);
-				topSquare.contactAngle = this.contactAngle;
-				topSquare.motifColor = this.motifColor;
-				if (this.style2) topSquare.style = this.style2;
-				else if (this.style) topSquare.style = this.style;
-				polygons.push(topSquare);
-
-				const leftSquare = Polygon.squareBySideLength(octagonSideLength, x + stepX, y + stepY / 2).rotate(Math.PI / 4);
-				leftSquare.contactAngle = this.contactAngle;
-				leftSquare.motifColor = this.motifColor;
-				if (this.style2) leftSquare.style = this.style2;
-				else if (this.style) leftSquare.style = this.style;
-				polygons.push(leftSquare);
-
-				colIndex++;
-			}
-			rowIndex++;
-		}
-
-		return polygons;
-	}
 
 	private groupPolygonsByStyle(): Map<string, Polygon[]> {
 		const groups = new Map<string, Polygon[]>();
@@ -305,6 +205,4 @@ export class Tessellation {
 		ctx.fill(batchPath);
 		ctx.stroke(batchPath);
 	}
-
-
 }
