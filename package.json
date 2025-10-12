@@ -1,6 +1,6 @@
 {
 	"name": "alzulejo",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"description": "Islamic geometric pattern and tessellation generator for Svelte 5 with reactive geometry and canvas rendering",
 	"type": "module",
 	"author": "Jesús Rascón",
