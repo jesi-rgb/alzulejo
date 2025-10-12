@@ -57,12 +57,21 @@ export class RhombitrihexagonalPattern extends TessellationPattern {
 					y: unitY,
 					polygonType: 'hexagon',
 					relativeSize: hexagonRelativeSize,
-					rotation: Math.PI / 6,
+					rotation: 0,
 					styleKey: 'style1'
 				};
 
 				yield {
 					x: currentX + hexWidth / 2 + triHeight / 1.5,
+					y: unitY,
+					polygonType: 'triangle',
+					relativeSize: triangleRelativeSize,
+					rotation: Math.PI / 2,
+					styleKey: 'style2'
+				};
+
+				yield {
+					x: currentX + hexWidth / 2 + triHeight + squareWidth + triHeight * 1 / 3,
 					y: unitY,
 					polygonType: 'triangle',
 					relativeSize: triangleRelativeSize,
@@ -75,25 +84,16 @@ export class RhombitrihexagonalPattern extends TessellationPattern {
 					y: unitY,
 					polygonType: 'square',
 					relativeSize: squareRelativeSize,
-					rotation: Math.PI / 4,
 					styleKey: 'style3'
 				};
 
-				yield {
-					x: currentX + hexWidth / 2 + triHeight + squareWidth + triHeight * 1 / 3,
-					y: unitY,
-					polygonType: 'triangle',
-					relativeSize: triangleRelativeSize,
-					rotation: Math.PI / 2, // Rotated
-					styleKey: 'style2'
-				};
 
 				yield {
 					x: currentX + s * Math.sqrt(3) * ((Math.sqrt(3) + 1) / 4),
 					y: unitY - s * ((Math.sqrt(3) + 1) / 4),
 					polygonType: 'square',
 					relativeSize: squareRelativeSize,
-					rotation: Math.PI / 12,
+					rotation: -Math.PI / 6,
 					styleKey: 'style3'
 				};
 
@@ -102,7 +102,7 @@ export class RhombitrihexagonalPattern extends TessellationPattern {
 					y: unitY - s * ((Math.sqrt(3) + 1) / 4),
 					polygonType: 'square',
 					relativeSize: squareRelativeSize,
-					rotation: -Math.PI / 12,
+					rotation: Math.PI / 6,
 					styleKey: 'style3'
 				};
 

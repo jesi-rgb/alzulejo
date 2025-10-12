@@ -26,15 +26,15 @@
 	}
 
 	const defaultSettings: AppSettings = {
-		tessellationType: "rhombitrihexagonal",
-		size: 40,
+		tessellationType: "octagon-square",
+		size: 250,
 		contactAngle: 45.1,
 		motifColor: "var(--primary)",
-		showPolygons: false,
+		showPolygons: true,
 		showMidpoints: false,
 		showRays: false,
 		showMotif: false,
-		showMotifFilled: true,
+		showMotifFilled: false,
 		showIntersectionPoints: false,
 	};
 
@@ -89,7 +89,8 @@
 		style1: style1,
 		style2: style2,
 		style3: style3,
-		backgroundColor: "#f5f5dc",
+		backgroundColor: "#212121",
+		rosette: true,
 	});
 
 	function initializeCanvas() {

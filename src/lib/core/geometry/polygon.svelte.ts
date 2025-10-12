@@ -50,7 +50,7 @@ export class Polygon {
 			return this._manualVertices;
 		}
 		if (this.sides && this.radius !== undefined && this.centerX !== undefined && this.centerY !== undefined) {
-			return this.generateRegularVertices(this.sides, this.radius, this.centerX, this.centerY);
+			return Polygon.generateRegularVertices(this.sides, this.radius, this.centerX, this.centerY);
 		}
 		return [];
 	});
@@ -119,6 +119,18 @@ export class Polygon {
 	apothem = $derived.by(() => {
 		return new Edge(this.center, this.edges[0].midpoint).magnitude;
 	});
+
+	copy = () => {
+		const newPolygon = new Polygon(this.vertices);
+		newPolygon.style = this.style;
+		newPolygon.sides = this.sides;
+		newPolygon.radius = this.radius;
+		newPolygon.centerX = this.centerX;
+		newPolygon.centerY = this.centerY;
+		newPolygon.contactAngle = this.contactAngle;
+		newPolygon.motifColor = this.motifColor;
+		return newPolygon;
+	}
 
 	rays = $derived.by(() => {
 		if (this.edges.length < 2) return [];
@@ -350,7 +362,7 @@ export class Polygon {
 	});
 
 
-	private generateRegularVertices(sides: number, radius: number, centerX: number, centerY: number): Point[] {
+	static generateRegularVertices(sides: number, radius: number, centerX: number, centerY: number): Point[] {
 		const vertices: Point[] = [];
 		const angleStep = (2 * Math.PI) / sides;
 
@@ -361,20 +373,27 @@ export class Polygon {
 			vertices.push(new Point(x, y));
 		}
 
-		return vertices;
+
+		const centerPoint = new Point(centerX, centerY);
+		const cos = Math.cos(Math.PI / sides);
+		const sin = Math.sin(Math.PI / sides);
+
+		const rotatedVertices = vertices.map(vertex => {
+			const dx = vertex.x - centerPoint.x;
+			const dy = vertex.y - centerPoint.y;
+			return new Point(
+				centerPoint.x + dx * cos - dy * sin,
+				centerPoint.y + dx * sin + dy * cos
+			);
+		});
+
+		return rotatedVertices;
 	}
 
 	static regular(sides: number, radius: number = 50, centerX: number = 0, centerY: number = 0): Polygon {
-		const vertices: Point[] = [];
-		const angleStep = (2 * Math.PI) / sides;
-
-		for (let i = 0; i < sides; i++) {
-			const angle = i * angleStep - Math.PI / 2; // Start from top
-			const x = centerX + radius * Math.cos(angle);
-			const y = centerY + radius * Math.sin(angle);
-			vertices.push(new Point(x, y));
-		}
+		const vertices = Polygon.generateRegularVertices(sides, radius, centerX, centerY);
 		const polygon = new Polygon(vertices);
+		polygon.radius = radius;
 		polygon.sides = sides;
 		polygon.centerX = centerX;
 		polygon.centerY = centerY;
@@ -445,17 +464,24 @@ export class Polygon {
 		const cos = Math.cos(angle);
 		const sin = Math.sin(angle);
 
-		this.vertices.forEach(vertex => {
+		const rotatedVertices = this.vertices.map(vertex => {
 			const dx = vertex.x - centerPoint.x;
 			const dy = vertex.y - centerPoint.y;
-
-			vertex.x = centerPoint.x + dx * cos - dy * sin;
-			vertex.y = centerPoint.y + dx * sin + dy * cos;
+			return new Point(
+				centerPoint.x + dx * cos - dy * sin,
+				centerPoint.y + dx * sin + dy * cos
+			);
 		});
 
-		const polygon = new Polygon(this.vertices);
+		const polygon = new Polygon(rotatedVertices);
 		polygon.style = this.style;
-		return polygon
+		polygon.sides = this.sides;
+		polygon.radius = this.radius;
+		polygon.centerX = this.centerX;
+		polygon.centerY = this.centerY;
+		polygon.contactAngle = this.contactAngle;
+		polygon.motifColor = this.motifColor;
+		return polygon;
 	}
 
 	contains(point: Point): boolean {

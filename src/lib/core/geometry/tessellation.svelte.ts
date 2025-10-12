@@ -11,6 +11,7 @@ import {
 	RhombitrihexagonalPattern
 } from './patterns';
 import { SnubSquarePattern } from './patterns/SnubSquarePattern';
+import { Rosette } from './rosette.svelte';
 
 type TessellationType = 'triangle' | 'square' | 'hexagon' | 'octagon-square' | 'rhombitrihexagonal' | 'snub-square';
 
@@ -28,6 +29,7 @@ interface TessellationConfig {
 	style3?: Style;
 	motifColor?: string;
 	backgroundColor?: string;
+	rosette?: boolean;
 }
 
 export class Tessellation {
@@ -35,6 +37,7 @@ export class Tessellation {
 	size = $state(50);
 	width = $state(800);
 	height = $state(600);
+	rosette = $state(true);
 
 	offset = $state(0);
 	contactAngle = $state(22.5);
@@ -71,6 +74,7 @@ export class Tessellation {
 		this.style1 = config.style1;
 		this.style2 = config.style2;
 		this.style3 = config.style3;
+		this.rosette = config.rosette ?? false;
 	}
 
 
@@ -88,17 +92,19 @@ export class Tessellation {
 			this.style3
 		);
 
-		const polygons: Polygon[] = [];
+		let polygons: Polygon[] = [];
 		const bounds = { width: this.width, height: this.height };
+
 
 		for (const tilePosition of pattern.generatePositions(bounds)) {
 			const polygon = factory.create(tilePosition, tilePosition.x, tilePosition.y);
 			polygons.push(polygon);
 		}
 
-		// if (this.rosette) {
-		// 	return new RosetteTransform(this);
-		// }
+		if (this.rosette) {
+			polygons = Rosette.transform(polygons);
+			// polygons.push(...Rosette.transform(polygons));
+		}
 
 		return polygons;
 	}
@@ -143,7 +149,7 @@ export class Tessellation {
 
 		if (showMidpoints || showRays || showMotif || showMotifFilled || showIntersectionPoints) {
 			let motifIndex = 0;
-			const totalMotifs = showMotifFilled 
+			const totalMotifs = showMotifFilled
 				? this.polygons.reduce((sum, p) => sum + p.motifPolygons.length, 0)
 				: 0;
 
