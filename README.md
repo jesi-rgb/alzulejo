@@ -7,18 +7,18 @@ Alzulejo (al-azulejo, andalusian tiles) is an islamic geometric pattern and tess
 ## Installation
 
 ```bash
-npm install pattern-gen
+npm install alzulejo
 # or
-pnpm add pattern-gen
+pnpm add alzulejo
 # or
-bun add pattern-gen
+bun add alzulejo
 ```
 
 ## Quick Start
 
 ```svelte
 <script>
-  import { PatternCanvas } from 'pattern-gen';
+  import { PatternCanvas } from 'alzulejo';
 </script>
 
 <PatternCanvas 
@@ -54,7 +54,7 @@ The easiest way to use the library:
 
 ```svelte
 <script>
-  import { PatternCanvas } from 'pattern-gen';
+  import { PatternCanvas } from 'alzulejo';
 </script>
 
 <PatternCanvas 
@@ -79,7 +79,7 @@ For more control, use the `Canvas` and `Tessellation` classes directly:
 ```svelte
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { Canvas, Tessellation } from 'pattern-gen';
+  import { Canvas, Tessellation } from 'alzulejo';
   
   let canvasElement: HTMLCanvasElement;
   let canvas: Canvas;
@@ -124,7 +124,7 @@ All properties are reactive thanks to Svelte 5 runes:
 
 ```svelte
 <script>
-  import { Tessellation } from 'pattern-gen';
+  import { Tessellation } from 'alzulejo';
   
   const tessellation = new Tessellation({
     type: 'hexagon',
