@@ -1,13 +1,13 @@
 {
 	"name": "alzulejo",
-	"version": "0.0.5",
+	"version": "0.0.7",
 	"description": "Islamic geometric pattern and tessellation generator for Svelte 5 with reactive geometry and canvas rendering",
 	"type": "module",
 	"author": "Jesús Rascón",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/jesi-rgb/alzulejo"
+		"url": "git+https://github.com/jesi-rgb/alzulejo.git"
 	},
 	"keywords": [
 		"svelte",

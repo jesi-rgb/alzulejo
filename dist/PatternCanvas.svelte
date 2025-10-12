@@ -21,6 +21,8 @@
 		style1?: Style;
 		style2?: Style;
 		style3?: Style;
+		animationDuration?: number;
+		staggerDelay?: number;
 		class?: string;
 	}
 
@@ -41,6 +43,8 @@
 		style1,
 		style2,
 		style3,
+		animationDuration = 400,
+		staggerDelay = 400,
 		class: className = ''
 	}: PatternCanvasProps = $props();
 
@@ -101,9 +105,18 @@
 		updateVisualization();
 	});
 
+	$effect(() => {
+		if (canvas) {
+			canvas.animationDuration = animationDuration;
+			canvas.staggerDelay = staggerDelay;
+		}
+	});
+
 	onMount(() => {
 		canvas = new Canvas();
 		canvas.setup(canvasElement);
+		canvas.animationDuration = animationDuration;
+		canvas.staggerDelay = staggerDelay;
 		updateTessellationSize();
 		canvas.add(
 			tessellation,

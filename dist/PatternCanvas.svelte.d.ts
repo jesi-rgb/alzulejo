@@ -16,6 +16,8 @@ interface PatternCanvasProps {
     style1?: Style;
     style2?: Style;
     style3?: Style;
+    animationDuration?: number;
+    staggerDelay?: number;
     class?: string;
 }
 declare const PatternCanvas: import("svelte").Component<PatternCanvasProps, {}, "">;

@@ -515,7 +515,7 @@ export class Polygon {
 		if (showMotifFilled) {
 			ctx.save();
 			const motifColor = this.style?.motifColor ?? this.motifColor;
-			const baseOpacity = this.style!.fillOpacity;
+			const baseOpacity = this.style?.fillOpacity ?? 1;
 
 			for (let i = 0; i < this.motifPolygons.length; i++) {
 				const polygon = this.motifPolygons[i];
