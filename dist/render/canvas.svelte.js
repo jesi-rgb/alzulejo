@@ -73,6 +73,13 @@ export class Canvas {
         }
         this.startAnimationLoop();
     }
+    update(renderable, ...drawArgs) {
+        this.currentBackgroundColor = renderable.backgroundColor;
+        this.renderables.push(() => renderable.draw(this.ctx, ...drawArgs, this));
+        if (!this.isAnimating) {
+            this.scheduleRender();
+        }
+    }
     clear(backgroundColor) {
         if (!this.ctx || !this.canvas)
             return;

@@ -29,6 +29,11 @@ export declare class Canvas {
         backgroundColor?: string;
         polygons?: any[];
     }, ...drawArgs: any[]): void;
+    update(renderable: {
+        draw: (ctx: CanvasRenderingContext2D, ...args: any[]) => void;
+        backgroundColor?: string;
+        polygons?: any[];
+    }, ...drawArgs: any[]): void;
     clear(backgroundColor?: string): void;
     clearRenderables(): void;
     withStyle(style: Partial<CanvasRenderingContext2D>, drawFn: (ctx: CanvasRenderingContext2D) => void): void;

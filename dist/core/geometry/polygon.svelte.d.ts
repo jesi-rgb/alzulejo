@@ -1,5 +1,6 @@
 import type { Style } from './style.svelte';
 import { Point, Edge, Ray } from './point.svelte';
+import { Canvas } from '../../render/canvas.svelte';
 interface PolygonConfig {
     sides: number;
     radius?: number;
@@ -57,7 +58,7 @@ export declare class Polygon {
     static dodecagonBySideLength(sideLength: number, centerX?: number, centerY?: number): Polygon;
     rotate(angle: number): Polygon;
     contains(point: Point): boolean;
-    draw(ctx: CanvasRenderingContext2D, midpoints?: boolean, rays?: boolean, showPolygon?: boolean, showMotif?: boolean, showMotifFilled?: boolean, showIntersectionPoints?: boolean, canvas?: any, motifStartIndex?: number, totalMotifs?: number): void;
+    draw(ctx: CanvasRenderingContext2D, midpoints?: boolean, rays?: boolean, showPolygon?: boolean, showMotif?: boolean, showMotifFilled?: boolean, showIntersectionPoints?: boolean, canvas?: Canvas, motifStartIndex?: number, totalMotifs?: number): void;
     color(ctx: CanvasRenderingContext2D, animationProgress?: number): void;
 }
 export {};
