@@ -1,6 +1,6 @@
-# pattern-gen
+# Alzulejo
 
-Islamic geometric pattern and tessellation generator for Svelte 5. A powerful library for creating beautiful tessellations with reactive geometry and high-performance canvas rendering.
+Alzulejo (al-azulejo, andalusian tiles) is an islamic geometric pattern and tessellation generator for Svelte 5. A powerful library for creating beautiful tessellations with reactive geometry and high-performance canvas rendering.
 
 **[npm package](https://www.npmjs.com/package/pattern-gen)** • This repo includes both the library (in `src/lib/`) and an interactive demo application.
 
