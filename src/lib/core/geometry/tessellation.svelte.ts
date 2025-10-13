@@ -100,6 +100,7 @@ export class Tessellation {
 			const polygon = factory.create(tilePosition, tilePosition.x, tilePosition.y);
 			polygons.push(polygon);
 		}
+		console.log(polygons)
 
 		if (this.rosette) {
 			polygons = Rosette.transform(polygons);

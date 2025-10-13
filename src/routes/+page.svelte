@@ -28,7 +28,7 @@
 
 	const defaultSettings: AppSettings = {
 		tessellationType: "octagon-square",
-		size: 250,
+		size: 150,
 		contactAngle: 45.1,
 		motifColor: "var(--primary)",
 		showPolygons: true,
@@ -276,7 +276,7 @@
 							id="contact-angle"
 							type="range"
 							min="0"
-							max="90"
+							max="360"
 							step="0.5"
 							bind:value={tessellation.contactAngle}
 							oninput={(e) => {

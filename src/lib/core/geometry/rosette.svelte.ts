@@ -268,10 +268,10 @@ class PlanarGraph {
 			return t > EPSILON && t < (1 - EPSILON);
 		};
 
-
 		let changed = true;
 		let iterations = 0;
-		while (changed && iterations < 100) {
+		const maxIterations = this.vertices.size * 2;
+		while (changed && iterations < maxIterations) {
 			iterations++;
 			changed = false;
 
