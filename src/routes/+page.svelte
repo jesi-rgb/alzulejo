@@ -29,15 +29,15 @@
 	const defaultSettings: AppSettings = {
 		tessellationType: "octagon-square",
 		size: 150,
-		contactAngle: 45.1,
+		contactAngle: 155.5,
 		motifColor: "var(--primary)",
 		showPolygons: true,
 		showMidpoints: false,
 		showRays: false,
 		showMotif: false,
-		showMotifFilled: false,
+		showMotifFilled: true,
 		showIntersectionPoints: false,
-		showVertices: true,
+		showVertices: false,
 	};
 
 	let settings = $state<AppSettings>({ ...defaultSettings });
