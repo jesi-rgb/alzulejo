@@ -207,7 +207,8 @@ export class Polygon {
 
 		for (let i = 0; i < this.rays.length; i++) {
 			const ray1 = this.rays[i];
-			const ray2 = this.rays[(i + 1) % this.rays.length];
+			const skip = this.edges.length > 5 ? 3 : 1
+			const ray2 = this.rays[(i + skip) % this.rays.length];
 
 			if (!ray1.origin || !ray2.origin) continue;
 
@@ -496,7 +497,19 @@ export class Polygon {
 		return inside;
 	}
 
-	draw(ctx: CanvasRenderingContext2D, midpoints: boolean = false, rays: boolean = true, showPolygon: boolean = true, showMotif: boolean = false, showMotifFilled: boolean = false, showIntersectionPoints: boolean = false, canvas?: Canvas, motifStartIndex: number = 0, totalMotifs: number = 0, showVertices: boolean = false): void {
+	draw(
+		ctx: CanvasRenderingContext2D,
+		midpoints: boolean = false,
+		rays: boolean = true,
+		showPolygon: boolean = true,
+		showMotif: boolean = false,
+		showMotifFilled: boolean = false,
+		style: Style = {},
+		showIntersectionPoints: boolean = false,
+		canvas?: Canvas,
+		motifStartIndex: number = 0,
+		totalMotifs: number = 0,
+		showVertices: boolean = false): void {
 		if (this.vertices.length < 2) return;
 
 		if (showPolygon) {
@@ -531,10 +544,10 @@ export class Polygon {
 
 		if (showMotifFilled) {
 			ctx.save();
-			const motifColor = this.style?.motifColor ?? this.motifColor;
 			const baseOpacity = this.style?.fillOpacity ?? 1;
 
 			for (let i = 0; i < this.motifPolygons.length; i++) {
+				const motifColor = style.motifColor ?? this.motifColor;
 				const polygon = this.motifPolygons[i];
 				if (polygon.length < 3) continue;
 

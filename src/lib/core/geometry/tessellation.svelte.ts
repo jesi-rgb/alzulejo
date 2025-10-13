@@ -100,7 +100,6 @@ export class Tessellation {
 			const polygon = factory.create(tilePosition, tilePosition.x, tilePosition.y);
 			polygons.push(polygon);
 		}
-		console.log(polygons)
 
 		if (this.rosette) {
 			polygons = Rosette.transform(polygons);
@@ -154,8 +153,10 @@ export class Tessellation {
 				? this.polygons.reduce((sum, p) => sum + p.motifPolygons.length, 0)
 				: 0;
 
+			const styleMap = [this.style, this.style1, this.style2, this.style3];
 			for (let i = 0; i < this.polygons.length; i++) {
-				this.polygons[i].draw(ctx, showMidpoints, showRays, false, showMotif, showMotifFilled, showIntersectionPoints, canvas, motifIndex, totalMotifs, showVertices);
+				const style = this.polygons[i].edges.length > 5 ? styleMap[1] : styleMap[2];
+				this.polygons[i].draw(ctx, showMidpoints, showRays, false, showMotif, showMotifFilled, style, showIntersectionPoints, canvas, motifIndex, totalMotifs, showVertices);
 				if (showMotifFilled) {
 					motifIndex += this.polygons[i].motifPolygons.length;
 				}

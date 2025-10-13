@@ -29,7 +29,7 @@
 	const defaultSettings: AppSettings = {
 		tessellationType: "octagon-square",
 		size: 150,
-		contactAngle: 155.5,
+		contactAngle: 158,
 		motifColor: "var(--primary)",
 		showPolygons: true,
 		showMidpoints: false,
