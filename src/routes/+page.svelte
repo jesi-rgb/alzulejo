@@ -23,6 +23,7 @@
 		showMotif: boolean;
 		showMotifFilled: boolean;
 		showIntersectionPoints: boolean;
+		showVertices: boolean;
 	}
 
 	const defaultSettings: AppSettings = {
@@ -36,6 +37,7 @@
 		showMotif: false,
 		showMotifFilled: false,
 		showIntersectionPoints: false,
+		showVertices: true,
 	};
 
 	let settings = $state<AppSettings>({ ...defaultSettings });
@@ -107,6 +109,8 @@
 			settings.showMotif,
 			settings.showMotifFilled,
 			settings.showIntersectionPoints,
+			canvas,
+			settings.showVertices,
 		);
 	}
 
@@ -156,6 +160,8 @@
 			settings.showMotif,
 			settings.showMotifFilled,
 			settings.showIntersectionPoints,
+			canvas,
+			settings.showVertices,
 		);
 	}
 
@@ -423,6 +429,16 @@
 							}}
 						/>
 						Show Intersection Points
+					</label>
+					<label class="checkbox-control">
+						<input
+							type="checkbox"
+							bind:checked={settings.showVertices}
+							onchange={() => {
+								updateVisualization();
+							}}
+						/>
+						Show Vertices
 					</label>
 				</div>
 			</div>

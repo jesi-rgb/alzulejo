@@ -136,7 +136,7 @@ export class Tessellation {
 
 	draw(ctx: CanvasRenderingContext2D, showPolygons: boolean = true,
 		showMidpoints: boolean = false,
-		showRays: boolean = false, showMotif: boolean = true, showMotifFilled: boolean = false, showIntersectionPoints: boolean = false, canvas?: any): void {
+		showRays: boolean = false, showMotif: boolean = true, showMotifFilled: boolean = false, showIntersectionPoints: boolean = false, canvas?: any, showVertices: boolean = false): void {
 		if (this.polygons.length === 0) return;
 
 		if (showPolygons) {
@@ -147,14 +147,14 @@ export class Tessellation {
 			}
 		}
 
-		if (showMidpoints || showRays || showMotif || showMotifFilled || showIntersectionPoints) {
+		if (showMidpoints || showRays || showMotif || showMotifFilled || showIntersectionPoints || showVertices) {
 			let motifIndex = 0;
 			const totalMotifs = showMotifFilled
 				? this.polygons.reduce((sum, p) => sum + p.motifPolygons.length, 0)
 				: 0;
 
 			for (let i = 0; i < this.polygons.length; i++) {
-				this.polygons[i].draw(ctx, showMidpoints, showRays, false, showMotif, showMotifFilled, showIntersectionPoints, canvas, motifIndex, totalMotifs);
+				this.polygons[i].draw(ctx, showMidpoints, showRays, false, showMotif, showMotifFilled, showIntersectionPoints, canvas, motifIndex, totalMotifs, showVertices);
 				if (showMotifFilled) {
 					motifIndex += this.polygons[i].motifPolygons.length;
 				}

@@ -496,7 +496,7 @@ export class Polygon {
 		return inside;
 	}
 
-	draw(ctx: CanvasRenderingContext2D, midpoints: boolean = false, rays: boolean = true, showPolygon: boolean = true, showMotif: boolean = false, showMotifFilled: boolean = false, showIntersectionPoints: boolean = false, canvas?: Canvas, motifStartIndex: number = 0, totalMotifs: number = 0): void {
+	draw(ctx: CanvasRenderingContext2D, midpoints: boolean = false, rays: boolean = true, showPolygon: boolean = true, showMotif: boolean = false, showMotifFilled: boolean = false, showIntersectionPoints: boolean = false, canvas?: Canvas, motifStartIndex: number = 0, totalMotifs: number = 0, showVertices: boolean = false): void {
 		if (this.vertices.length < 2) return;
 
 		if (showPolygon) {
@@ -593,6 +593,18 @@ export class Polygon {
 				const point = pair.intersectionPoint;
 				ctx.moveTo(point.x + 3, point.y);
 				ctx.ellipse(point.x, point.y, 3, 3, 0, 0, Math.PI * 2);
+			}
+			ctx.fill();
+			ctx.restore();
+		}
+
+		if (showVertices) {
+			ctx.save();
+			ctx.fillStyle = 'hotpink';
+			ctx.beginPath();
+			for (const vertex of this.vertices) {
+				ctx.moveTo(vertex.x + 4, vertex.y);
+				ctx.ellipse(vertex.x, vertex.y, 4, 4, 0, 0, Math.PI * 2);
 			}
 			ctx.fill();
 			ctx.restore();

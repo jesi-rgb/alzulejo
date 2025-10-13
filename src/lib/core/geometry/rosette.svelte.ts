@@ -31,10 +31,12 @@ export class Rosette {
 class PlanarGraph {
 	vertices: Map<string, Point>;
 	edges: GraphEdge[];
+	vertexAncestors: Map<string, Polygon>;
 
 	constructor() {
 		this.vertices = new Map();
 		this.edges = [];
+		this.vertexAncestors = new Map();
 	}
 
 	getIncidentEdges(v: Point): GraphEdge[] {
@@ -60,63 +62,138 @@ class PlanarGraph {
 	static transform(polygons: Polygon[], graph: PlanarGraph): Polygon[] {
 		for (const p of polygons) {
 			if (p.sides >= 5) {
-				// add regular polygon
 				PlanarGraph.addRegularPolygon(graph, p);
 			}
 			else {
-				// add irregular polygon
 				PlanarGraph.addIrregularPolygon(graph, p);
 			}
 		}
 
+		graph.mergeCollinearEdges();
+
 		const vertices = graph.findFaces();
-		const newPolygons = graph.assemblePolygons(vertices);
+		const newPolygons = graph.assemblePolygons(vertices, polygons);
 		return newPolygons;
 	}
 
+	getVertex(v: Point): Point {
+		return this.vertices.get(`${Math.round(v.x * 1000)},${Math.round(v.y * 1000)}`)!
+	}
 
 	findFaces(): Point[][] {
 		const faces: Point[][] = [];
+		const visitedDirectedEdges = new Set<string>();
+
+		const pointKey = (p: Point) => `${Math.round(p.x * 1000)},${Math.round(p.y * 1000)}`;
+
+		const pointsEqual = (p1: Point, p2: Point) => pointKey(p1) === pointKey(p2);
+
+		const normalizeFace = (face: Point[]): string => {
+			const keys = face.map(pointKey);
+			let minRotation = keys;
+			for (let i = 1; i < keys.length; i++) {
+				const rotation = [...keys.slice(i), ...keys.slice(0, i)];
+				if (rotation.join(',') < minRotation.join(',')) {
+					minRotation = rotation;
+				}
+			}
+			return minRotation.join('|');
+		};
+
+		const seenFaces = new Set<string>();
 
 		for (const edge of this.edges) {
-			const face: Point[] = [];
-			let currentEdge = edge;
-			let currentVertex = edge.end;
-			const startingVertex = edge.start;
-			const maxIterations = 1000;
-			let iterations = 0;
+			for (const direction of [true, false]) {
+				const startVertex = direction ? edge.start : edge.end;
+				const endVertex = direction ? edge.end : edge.start;
+				
+				const directedEdgeKey = `${pointKey(startVertex)}→${pointKey(endVertex)}`;
 
-			face.push(startingVertex);
+				if (visitedDirectedEdges.has(directedEdgeKey)) continue;
 
-			while (iterations < maxIterations) {
-				iterations++;
+				const face: Point[] = [];
 
-				face.push(currentVertex);
+				let currentEdge = edge;
+				let currentVertex = this.getVertex(endVertex);
+				const startingVertex = this.getVertex(startVertex);
+				let cameFrom = startingVertex;
 
-				if (currentVertex === startingVertex) {
-					face.pop()
-					faces.push(face);
-					break
+				const maxIterations = 50;
+				let iterations = 0;
+
+				face.push(startingVertex);
+
+				while (iterations < maxIterations) {
+					iterations++;
+
+					if (pointsEqual(currentVertex, startingVertex)) {
+						const faceSignature = normalizeFace(face);
+						if (!seenFaces.has(faceSignature)) {
+							seenFaces.add(faceSignature);
+							faces.push(face);
+						}
+						break
+					}
+
+					const currentDirectedEdgeKey = `${pointKey(cameFrom)}→${pointKey(currentVertex)}`;
+					visitedDirectedEdges.add(currentDirectedEdgeKey);
+
+					const sortedEdges = this.sortEdgesAround(currentVertex);
+
+					face.push(currentVertex);
+
+					const incomingEdgeIndex = sortedEdges.findIndex(e => {
+						const other = e.otherEnd(currentVertex);
+						return pointsEqual(other, cameFrom);
+					});
+
+					const nextEdge = sortedEdges[(incomingEdgeIndex + 1) % sortedEdges.length];
+
+					cameFrom = currentVertex;
+					currentVertex = this.getVertex(nextEdge.otherEnd(currentVertex));
+					currentEdge = nextEdge;
 				}
-
-				const sortedEdges = this.sortEdgesAround(currentVertex);
-				const indexOfCurrentEdge = sortedEdges.indexOf(currentEdge)
-
-				const nextEdge = sortedEdges[(indexOfCurrentEdge + 1) % sortedEdges.length];
-
-				currentVertex = nextEdge.otherEnd(currentVertex);
-				currentEdge = nextEdge;
-
 			}
 		}
 
 		return faces;
 
 	}
-	assemblePolygons(vertexGroupings: Point[][]): Polygon[] {
+
+	assemblePolygons(vertexGroupings: Point[][], ancestorPolygons: Polygon[]): Polygon[] {
+		const pointKey = (p: Point) => `${Math.round(p.x * 1000)},${Math.round(p.y * 1000)}`;
+
 		return vertexGroupings.filter(g => g.length >= 3).map(vertices => {
 			const p = new Polygon(vertices);
-			return p
+
+			const ancestorCounts = new Map<Polygon, number>();
+			for (const vertex of vertices) {
+				const ancestor = this.vertexAncestors.get(pointKey(vertex));
+				if (ancestor) {
+					ancestorCounts.set(ancestor, (ancestorCounts.get(ancestor) || 0) + 1);
+				}
+			}
+
+			let mostCommonAncestor: Polygon | undefined;
+			let maxCount = 0;
+			for (const [ancestor, count] of ancestorCounts.entries()) {
+				if (count > maxCount) {
+					maxCount = count;
+					mostCommonAncestor = ancestor;
+				}
+			}
+
+			if (mostCommonAncestor) {
+				p.contactAngle = mostCommonAncestor.contactAngle;
+				p.style = mostCommonAncestor.style;
+				p.motifColor = mostCommonAncestor.motifColor;
+			} else if (ancestorPolygons.length > 0) {
+				p.contactAngle = ancestorPolygons[0].contactAngle;
+				p.style = ancestorPolygons[0].style;
+				p.motifColor = ancestorPolygons[0].motifColor;
+			}
+
+			return p;
 		})
 	}
 
@@ -128,38 +205,40 @@ class PlanarGraph {
 		newP.motifColor = p.motifColor;
 		newP.contactAngle = p.contactAngle;
 
+		const innerVertices: Point[] = [];
+		const outerVertices: Point[] = [];
+
 		for (let i = 0; i < p.sides; i++) {
-			const midpoint = p.midpoints[i];
-			const innerVertex = newP.vertices[i];
-			const nextInnerVertex = newP.vertices[(i + 1) % p.sides];
-			const nextMidpoint = p.midpoints[(i + 1) % p.sides];
+			innerVertices.push(graph.addVertex(newP.vertices[i], p));
+			outerVertices.push(graph.addVertex(p.midpoints[i], p));
+		}
 
-			const outer = graph.addVertex(midpoint);
-			const inner = graph.addVertex(innerVertex);
-			const nextInner = graph.addVertex(nextInnerVertex);
-			const nextOuter = graph.addVertex(nextMidpoint);
+		for (let i = 0; i < p.sides; i++) {
+			const nextI = (i + 1) % p.sides;
 
-			graph.addEdge(outer, inner);
-			graph.addEdge(inner, nextInner);
-			graph.addEdge(nextInner, nextOuter);
+			graph.addEdge(outerVertices[i], innerVertices[i]);
+			graph.addEdge(innerVertices[i], innerVertices[nextI]);
 		}
 	}
 
 	static addIrregularPolygon(graph: PlanarGraph, p: Polygon): void {
-		const center = graph.addVertex(p.center)
+		const center = graph.addVertex(p.center, p)
 
 		for (const midpoint of p.midpoints) {
-			const outer = graph.addVertex(midpoint);
+			const outer = graph.addVertex(midpoint, p);
 			graph.addEdge(outer, center);
 		}
 
 	}
 
-	addVertex(point: Point): Point {
+	addVertex(point: Point, ancestor?: Polygon): Point {
 		const key = `${Math.round(point.x * 1000)},${Math.round(point.y * 1000)}`;
 
 		if (!this.vertices.has(key)) {
 			this.vertices.set(key, point);
+			if (ancestor) {
+				this.vertexAncestors.set(key, ancestor);
+			}
 		}
 
 		return this.vertices.get(key)!
@@ -167,5 +246,71 @@ class PlanarGraph {
 
 	addEdge(start: Point, end: Point): void {
 		this.edges.push(new GraphEdge(start, end));
+	}
+
+	mergeCollinearEdges(): void {
+		const pointKey = (p: Point) => `${Math.round(p.x * 1000)},${Math.round(p.y * 1000)}`;
+
+		const areCollinear = (p1: Point, p2: Point, p3: Point): boolean => {
+			const EPSILON = 1e-3;
+			const crossProduct = (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
+			return Math.abs(crossProduct) < EPSILON;
+		};
+
+		const isBetween = (p: Point, a: Point, b: Point): boolean => {
+			const EPSILON = 1e-3;
+			const dotProduct = (p.x - a.x) * (b.x - a.x) + (p.y - a.y) * (b.y - a.y);
+			const squaredLength = (b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y);
+
+			if (squaredLength < EPSILON) return false;
+
+			const t = dotProduct / squaredLength;
+			return t > EPSILON && t < (1 - EPSILON);
+		};
+
+
+		let changed = true;
+		let iterations = 0;
+		while (changed && iterations < 100) {
+			iterations++;
+			changed = false;
+
+			const vertexEdges = new Map<string, GraphEdge[]>();
+			for (const edge of this.edges) {
+				const startKey = pointKey(edge.start);
+				const endKey = pointKey(edge.end);
+
+				if (!vertexEdges.has(startKey)) vertexEdges.set(startKey, []);
+				if (!vertexEdges.has(endKey)) vertexEdges.set(endKey, []);
+
+				vertexEdges.get(startKey)!.push(edge);
+				vertexEdges.get(endKey)!.push(edge);
+			}
+
+			for (const [vKey, edges] of vertexEdges.entries()) {
+				if (edges.length !== 2) continue;
+
+				const v = this.vertices.get(vKey);
+				if (!v) continue;
+
+				const edge1 = edges[0];
+				const edge2 = edges[1];
+
+				const p1 = edge1.otherEnd(v);
+				const p2 = edge2.otherEnd(v);
+
+				if (areCollinear(p1, v, p2) && isBetween(v, p1, p2)) {
+					const newEdge = new GraphEdge(p1, p2);
+					this.edges = this.edges.filter(e => e !== edge1 && e !== edge2);
+					this.edges.push(newEdge);
+
+					this.vertices.delete(vKey);
+
+					changed = true;
+					break;
+				}
+			}
+		}
+
 	}
 }
