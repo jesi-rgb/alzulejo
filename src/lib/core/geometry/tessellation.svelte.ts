@@ -12,8 +12,9 @@ import {
 } from './patterns';
 import { SnubSquarePattern } from './patterns/SnubSquarePattern';
 import { Rosette } from './rosette.svelte';
+import { TruncatedHexagonalPattern } from './patterns/TruncatedHexagonalPattern';
 
-type TessellationType = 'triangle' | 'square' | 'hexagon' | 'octagon-square' | 'rhombitrihexagonal' | 'snub-square';
+type TessellationType = 'triangle' | 'square' | 'hexagon' | 'octagon-square' | 'rhombitrihexagonal' | 'snub-square' | 'truncated-hexagonal';
 
 interface TessellationConfig {
 	type: TessellationType;
@@ -49,7 +50,7 @@ export class Tessellation {
 	style3 = $state<Style>();
 
 	polygons: Polygon[] = $derived.by(() => {
-		const newSystemTypes = ['triangle', 'square', 'hexagon', 'octagon-square', 'rhombitrihexagonal', 'snub-square'];
+		const newSystemTypes = ['triangle', 'square', 'hexagon', 'octagon-square', 'rhombitrihexagonal', 'truncated-hexagonal', 'snub-square'];
 		if (newSystemTypes.includes(this.type)) {
 			return this.generateFromPattern();
 		}
@@ -123,6 +124,8 @@ export class Tessellation {
 				return new RhombitrihexagonalPattern(this.size);
 			case 'snub-square':
 				return new SnubSquarePattern(this.size);
+			case 'truncated-hexagonal':
+				return new TruncatedHexagonalPattern(this.size);
 			default:
 				return null;
 		}

@@ -1,5 +1,5 @@
 export interface TileDefinition {
-	polygonType: 'triangle' | 'square' | 'hexagon' | 'octagon';
+	polygonType: 'triangle' | 'square' | 'hexagon' | 'octagon' | 'dodecagon';
 	relativeSize: number;
 	rotation?: number;
 	styleKey?: 'default' | 'style1' | 'style2' | 'style3';

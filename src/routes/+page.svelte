@@ -3,7 +3,6 @@
 	import { Tessellation } from "@lib/core/geometry";
 	import { Canvas } from "@lib/render/canvas.svelte";
 	import type { Style } from "../lib/core/geometry/style.svelte";
-	import { browser } from "$app/environment";
 
 	interface AppSettings {
 		tessellationType:
@@ -12,6 +11,7 @@
 			| "hexagon"
 			| "octagon-square"
 			| "rhombitrihexagonal"
+			| "truncated-hexagonal"
 			| "snub-square";
 		size: number;
 
@@ -27,7 +27,7 @@
 	}
 
 	const defaultSettings: AppSettings = {
-		tessellationType: "octagon-square",
+		tessellationType: "truncated-hexagonal",
 		size: 150,
 		contactAngle: 158,
 		motifColor: "var(--primary)",

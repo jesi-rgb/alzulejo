@@ -30,6 +30,9 @@ export class PolygonFactory {
 			case 'octagon':
 				polygon = Polygon.octagon(actualSize, x, y);
 				break;
+			case 'dodecagon':
+				polygon = Polygon.dodecagon(actualSize, x, y);
+				break;
 		}
 
 		if (tile.rotation) {
