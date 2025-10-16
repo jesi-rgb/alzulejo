@@ -8,15 +8,16 @@ export class TruncatedHexagonalPattern extends TessellationPattern {
     const { width: unitWidth, height: unitHeight } = this.getUnitDimensions();
 
 
-    const sharedEdgeLength = this.size;
+    const sharedEdgeLength = this.size / 2; // dodecagons are a bit too big by default 
+
     const dodecagon = Polygon.dodecagonBySideLength(sharedEdgeLength);
+    const oct = Polygon.octagonBySideLength(sharedEdgeLength);
     const triangle = Polygon.triangleBySideLength(sharedEdgeLength);
 
     const dodecagonWidth = dodecagon.circumradius;
-    const dodecagonApothem = dodecagon.apothem;
 
-    const stepX = dodecagon.circumradius;
-    const stepY = dodecagonWidth;
+    const stepX = dodecagon.apothem * 2
+    const stepY = stepX;
 
     const dodecagonRelativeSize = dodecagon.circumradius / this.size;
     const triangleRelativeSize = triangle.circumradius / this.size;
@@ -24,27 +25,28 @@ export class TruncatedHexagonalPattern extends TessellationPattern {
     for (let row = 0; row < Math.ceil(bounds.height / stepY) + 1; row++) {
       for (let col = 0; col < Math.ceil(bounds.width / stepX) + 1; col++) {
         const offsetY = col % 2 === 0 ? 0 : stepY * 0.5;
-        const offsetX = col % 2 === 0 ? 0 : 38;
 
-        const baseX = col * stepX;
-        const baseY = row * stepY - offsetY;
+        const baseX = col * (stepX - sharedEdgeLength * .5);
+        const baseY = row * stepY + offsetY;
 
         yield {
-          x: baseX - offsetX,
+          x: baseX,
           y: baseY,
           polygonType: 'dodecagon',
-          relativeSize: 1,
+          relativeSize: dodecagonRelativeSize,
           styleKey: 'default'
         };
 
-        yield {
-          x: baseX - dodecagonWidth + stepX / 3.5 + 1.2,
-          y: baseY,
-          polygonType: 'triangle',
-          relativeSize: triangleRelativeSize / 2,
-          rotation: Math.PI / 2,
-          styleKey: 'default'
-        };
+        // const triX = col * stepX + stepX / 2 - triangle.circumradius
+        // const triY = row * stepY - dodecagon.apothem
+        // yield {
+        //   x: triX,
+        //   y: triY,
+        //   polygonType: 'triangle',
+        //   relativeSize: triangleRelativeSize,
+        //   rotation: Math.PI / 2,
+        //   styleKey: 'default'
+        // };
 
       }
     }

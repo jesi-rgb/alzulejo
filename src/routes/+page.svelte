@@ -92,7 +92,7 @@
 		style2: style2,
 		style3: style3,
 		backgroundColor: "#212121",
-		rosette: true,
+		// rosette: true,
 	});
 
 	function initializeCanvas() {
