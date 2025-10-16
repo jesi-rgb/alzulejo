@@ -29,7 +29,7 @@ export class TruncatedHexagonalPattern extends TessellationPattern {
           y: baseY,
           polygonType: 'dodecagon',
           relativeSize: dodecagonRelativeSize,
-          styleKey: 'default'
+          styleKey: 'style1'
         };
 
         //////////////////////////////////////////

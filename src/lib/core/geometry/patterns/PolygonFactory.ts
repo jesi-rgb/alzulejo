@@ -41,6 +41,7 @@ export class PolygonFactory {
 
 		polygon.contactAngle = this.contactAngle;
 		polygon.motifColor = this.motifColor;
+		polygon.style = this.getStyle()
 
 		const style = this.getStyle(tile.styleKey);
 		if (style) {
