@@ -14,7 +14,7 @@ import { SnubSquarePattern } from './patterns/SnubSquarePattern';
 import { Rosette } from './rosette.svelte';
 import { TruncatedHexagonalPattern } from './patterns/TruncatedHexagonalPattern';
 
-type TessellationType = 'triangle' | 'square' | 'hexagon' | 'octagon-square' | 'rhombitrihexagonal' | 'snub-square' | 'truncated-hexagonal';
+export type TessellationType = 'triangle' | 'square' | 'hexagon' | 'octagon-square' | 'rhombitrihexagonal' | 'snub-square' | 'truncated-hexagonal';
 
 interface TessellationConfig {
 	type: TessellationType;

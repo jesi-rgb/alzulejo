@@ -3,6 +3,17 @@
 	import { Tessellation } from "@lib/core/geometry";
 	import { Canvas } from "@lib/render/canvas.svelte";
 	import type { Style } from "../lib/core/geometry/style.svelte";
+	import type { TessellationType } from "../lib/core/geometry/tessellation.svelte";
+
+	const tessellationTypes: { value: TessellationType; label: string }[] = [
+		{ value: "triangle", label: "Triangle" },
+		{ value: "square", label: "Square" },
+		{ value: "hexagon", label: "Hexagon" },
+		{ value: "octagon-square", label: "Octagon-Square" },
+		{ value: "rhombitrihexagonal", label: "Rhombitrihexagonal" },
+		{ value: "snub-square", label: "Snub Square" },
+		{ value: "truncated-hexagonal", label: "Truncated Hexagonal" },
+	];
 
 	interface AppSettings {
 		tessellationType:
@@ -92,7 +103,7 @@
 		style2: style2,
 		style3: style3,
 		backgroundColor: "#212121",
-		// rosette: true,
+		rosette: true,
 	});
 
 	function initializeCanvas() {
@@ -130,14 +141,7 @@
 		updateVisualization();
 	}
 
-	function setTessellationType(
-		type:
-			| "triangle"
-			| "square"
-			| "hexagon"
-			| "octagon-square"
-			| "rhombitrihexagonal",
-	) {
+	function setTessellationType(type: TessellationType) {
 		tessellation.type = type;
 		settings.tessellationType = type;
 		updateVisualization();
@@ -203,48 +207,16 @@
 			<div class="control-section">
 				<h3 class="text-primary">Tessellation Type</h3>
 				<div class="button-group">
-					<button
-						class="btn {tessellation.type === 'triangle'
-							? 'btn-primary'
-							: 'btn-neutral'}"
-						onclick={() => setTessellationType("triangle")}
-					>
-						Triangle
-					</button>
-					<button
-						class="btn {tessellation.type === 'square'
-							? 'btn-primary'
-							: 'btn-neutral'}"
-						onclick={() => setTessellationType("square")}
-					>
-						Square
-					</button>
-					<button
-						class="btn {tessellation.type === 'hexagon'
-							? 'btn-primary'
-							: 'btn-neutral'}"
-						onclick={() => setTessellationType("hexagon")}
-					>
-						Hexagon
-					</button>
-					<button
-						class="btn {tessellation.type === 'octagon-square'
-							? 'btn-primary'
-							: 'btn-neutral'}"
-						onclick={() => setTessellationType("octagon-square")}
-					>
-						Octagon-Square
-					</button>
-
-					<button
-						class="btn {tessellation.type === 'rhombitrihexagonal'
-							? 'btn-primary'
-							: 'btn-neutral'}"
-						onclick={() =>
-							setTessellationType("rhombitrihexagonal")}
-					>
-						rhombitrihexagonal
-					</button>
+					{#each tessellationTypes as { value, label }}
+						<button
+							class="btn {tessellation.type === value
+								? 'btn-primary'
+								: 'btn-neutral'}"
+							onclick={() => setTessellationType(value)}
+						>
+							{label}
+						</button>
+					{/each}
 				</div>
 			</div>
 
