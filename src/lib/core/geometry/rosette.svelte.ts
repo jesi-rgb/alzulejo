@@ -1,4 +1,4 @@
-import { Point } from "./point.svelte";
+import { Point, Edge } from "./point.svelte";
 import { Polygon } from "./polygon.svelte";
 
 class GraphEdge {
@@ -32,11 +32,13 @@ class PlanarGraph {
 	vertices: Map<string, Point>;
 	edges: GraphEdge[];
 	vertexAncestors: Map<string, Polygon>;
+	originalEdges: Map<Polygon, Edge[]>;
 
 	constructor() {
 		this.vertices = new Map();
 		this.edges = [];
 		this.vertexAncestors = new Map();
+		this.originalEdges = new Map();
 	}
 
 	getIncidentEdges(v: Point): GraphEdge[] {
@@ -187,6 +189,7 @@ class PlanarGraph {
 				p.contactAngle = mostCommonAncestor.contactAngle;
 				p.style = mostCommonAncestor.style;
 				p.motifColor = mostCommonAncestor.motifColor;
+				p.ancestorOriginalEdges = this.originalEdges.get(mostCommonAncestor) || null;
 			} else if (ancestorPolygons.length > 0) {
 				p.contactAngle = ancestorPolygons[0].contactAngle;
 				p.style = ancestorPolygons[0].style;
@@ -198,6 +201,8 @@ class PlanarGraph {
 	}
 
 	static addRegularPolygon(graph: PlanarGraph, p: Polygon): void {
+		graph.originalEdges.set(p, p.edges.map(e => new Edge(e.start, e.end)));
+
 		const r = Rosette.calculateInnerRadius(p.radius, p.sides);
 		const newP = Polygon.regular(p.sides, r, p.centerX, p.centerY).rotate(Math.PI / p.sides);
 
@@ -222,13 +227,26 @@ class PlanarGraph {
 	}
 
 	static addIrregularPolygon(graph: PlanarGraph, p: Polygon): void {
-		const center = graph.addVertex(p.center, p)
+		const center = graph.addVertex(p.center, p);
 
-		for (const midpoint of p.midpoints) {
-			const outer = graph.addVertex(midpoint, p);
+		const ancestor = PlanarGraph.findAncestor(p, graph.vertexAncestors);
+		const ancestorOriginalEdges = ancestor ? graph.originalEdges.get(ancestor) : null;
+
+		for (const edge of p.edges) {
+			let contactPoint = edge.midpoint;
+
+			if (ancestorOriginalEdges) {
+				contactPoint = PlanarGraph.findBestContactPoint(
+					edge,
+					ancestorOriginalEdges,
+					p.center,
+					edge.midpoint
+				);
+			}
+
+			const outer = graph.addVertex(contactPoint, p);
 			graph.addEdge(outer, center);
 		}
-
 	}
 
 	addVertex(point: Point, ancestor?: Polygon): Point {
@@ -246,6 +264,56 @@ class PlanarGraph {
 
 	addEdge(start: Point, end: Point): void {
 		this.edges.push(new GraphEdge(start, end));
+	}
+
+	static findAncestor(p: Polygon, vertexAncestors: Map<string, Polygon>): Polygon | null {
+		const pointKey = (point: Point) => `${Math.round(point.x * 1000)},${Math.round(point.y * 1000)}`;
+
+		const ancestorCounts = new Map<Polygon, number>();
+		for (const vertex of p.vertices) {
+			const ancestor = vertexAncestors.get(pointKey(vertex));
+			if (ancestor) {
+				ancestorCounts.set(ancestor, (ancestorCounts.get(ancestor) || 0) + 1);
+			}
+		}
+
+		let mostCommonAncestor: Polygon | null = null;
+		let maxCount = 0;
+		for (const [ancestor, count] of ancestorCounts.entries()) {
+			if (count > maxCount) {
+				maxCount = count;
+				mostCommonAncestor = ancestor;
+			}
+		}
+
+		return mostCommonAncestor;
+	}
+
+	static findBestContactPoint(
+		edge: Edge,
+		originalEdges: Edge[],
+		center: Point,
+		defaultMidpoint: Point
+	): Point {
+		const distance = (p1: Point, p2: Point) => 
+			Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+
+		let bestPoint = defaultMidpoint;
+		const midpointToCenter = distance(defaultMidpoint, center);
+
+		for (const originalEdge of originalEdges) {
+			const intersection = edge.intersect(originalEdge);
+
+			if (intersection) {
+				const intersectionToCenter = distance(intersection, center);
+
+				if (intersectionToCenter < midpointToCenter) {
+					bestPoint = intersection;
+				}
+			}
+		}
+
+		return bestPoint;
 	}
 
 	mergeCollinearEdges(): void {

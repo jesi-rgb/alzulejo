@@ -30,6 +30,7 @@ export class Polygon {
 	contactAngle = 22.5
 	motifColor = 'purple'
 	_manualVertices: Point[] | null = null
+	ancestorOriginalEdges: Edge[] | null = null
 
 	constructor(verticesOrConfig: Point[] | PolygonConfig) {
 		if (Array.isArray(verticesOrConfig)) {
@@ -110,8 +111,32 @@ export class Polygon {
 		if (this.edges.length < 0) return [];
 
 		const midpoints: Point[] = [];
+		
 		for (let i = 0; i < this.edges.length; i++) {
-			midpoints.push(this.edges[i].midpoint);
+			const edge = this.edges[i];
+			let contactPoint = edge.midpoint;
+			
+			if (this.ancestorOriginalEdges && this.ancestorOriginalEdges.length > 0) {
+				const distance = (p1: Point, p2: Point) => 
+					Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+				
+				const midpointToCenter = distance(contactPoint, this.center);
+				
+				for (const originalEdge of this.ancestorOriginalEdges) {
+					const intersection = edge.intersect(originalEdge);
+					
+					if (intersection) {
+						const intersectionToCenter = distance(intersection, this.center);
+						
+						if (intersectionToCenter < midpointToCenter) {
+							contactPoint = intersection;
+							break;
+						}
+					}
+				}
+			}
+			
+			midpoints.push(contactPoint);
 		}
 		return midpoints;
 	});

@@ -40,9 +40,9 @@
 	const defaultSettings: AppSettings = {
 		tessellationType: "truncated-hexagonal",
 		size: 150,
-		contactAngle: 158,
+		contactAngle: 165.5,
 		motifColor: "var(--primary)",
-		showPolygons: true,
+		showPolygons: false,
 		showMidpoints: false,
 		showRays: false,
 		showMotif: false,
@@ -71,7 +71,7 @@
 		stroke: "#1a252f",
 		strokeWidth: 1.5,
 		strokeOpacity: 1,
-		motifColor: "#819A7F",
+		motifColor: "#3949ab",
 	});
 
 	let style2 = $state<Style>({
@@ -80,7 +80,7 @@
 		stroke: "#d68910",
 		strokeWidth: 1.5,
 		strokeOpacity: 1,
-		motifColor: "#5D7583",
+		motifColor: "#dce4f0",
 	});
 
 	let style3 = $state<Style>({
@@ -89,7 +89,7 @@
 		stroke: "#1e8449",
 		strokeWidth: 1.5,
 		strokeOpacity: 1,
-		motifColor: "#2c3e50",
+		motifColor: "#334e5c",
 	});
 
 	let tessellation = new Tessellation({
@@ -102,7 +102,7 @@
 		style1: style1,
 		style2: style2,
 		style3: style3,
-		backgroundColor: "#212121",
+		backgroundColor: "#8d9fc2",
 		rosette: true,
 	});
 
