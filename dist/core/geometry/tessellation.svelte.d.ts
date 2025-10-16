@@ -1,6 +1,6 @@
 import { Polygon } from './polygon.svelte';
 import type { Style } from './style.svelte';
-type TessellationType = 'triangle' | 'square' | 'hexagon' | 'octagon-square' | 'rhombitrihexagonal' | 'snub-square';
+export type TessellationType = 'triangle' | 'square' | 'hexagon' | 'octagon-square' | 'rhombitrihexagonal' | 'snub-square' | 'truncated-hexagonal';
 interface TessellationConfig {
     type: TessellationType;
     size: number;
@@ -14,12 +14,14 @@ interface TessellationConfig {
     style3?: Style;
     motifColor?: string;
     backgroundColor?: string;
+    rosette?: boolean;
 }
 export declare class Tessellation {
     type: TessellationType;
     size: number;
     width: number;
     height: number;
+    rosette: boolean;
     offset: number;
     contactAngle: number;
     motifColor: string;
@@ -38,7 +40,7 @@ export declare class Tessellation {
         height: number;
         polygonCount: number;
     };
-    draw(ctx: CanvasRenderingContext2D, showPolygons?: boolean, showMidpoints?: boolean, showRays?: boolean, showMotif?: boolean, showMotifFilled?: boolean, showIntersectionPoints?: boolean, canvas?: any): void;
+    draw(ctx: CanvasRenderingContext2D, showPolygons?: boolean, showMidpoints?: boolean, showRays?: boolean, showMotif?: boolean, showMotifFilled?: boolean, showIntersectionPoints?: boolean, canvas?: any, showVertices?: boolean): void;
     private groupPolygonsByStyle;
     private getStyleKey;
     private drawPolygonGroup;

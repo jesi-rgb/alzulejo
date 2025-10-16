@@ -32,12 +32,16 @@ export class PolygonFactory {
             case 'octagon':
                 polygon = Polygon.octagon(actualSize, x, y);
                 break;
+            case 'dodecagon':
+                polygon = Polygon.dodecagon(actualSize, x, y);
+                break;
         }
         if (tile.rotation) {
             polygon = polygon.rotate(tile.rotation);
         }
         polygon.contactAngle = this.contactAngle;
         polygon.motifColor = this.motifColor;
+        polygon.style = this.getStyle();
         const style = this.getStyle(tile.styleKey);
         if (style) {
             polygon.style = style;

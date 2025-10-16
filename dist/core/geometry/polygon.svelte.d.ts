@@ -26,6 +26,7 @@ export declare class Polygon {
     contactAngle: number;
     motifColor: string;
     _manualVertices: Point[] | null;
+    ancestorOriginalEdges: Edge[] | null;
     constructor(verticesOrConfig: Point[] | PolygonConfig);
     vertices: Point[];
     area: number;
@@ -37,10 +38,11 @@ export declare class Polygon {
     height: number;
     midpoints: Point[];
     apothem: number;
+    copy: () => Polygon;
     rays: Ray[];
     motif: RayPair[];
     motifPolygons: Point[][];
-    private generateRegularVertices;
+    static generateRegularVertices(sides: number, radius: number, centerX: number, centerY: number): Point[];
     static regular(sides: number, radius?: number, centerX?: number, centerY?: number): Polygon;
     static triangle(radius?: number, centerX?: number, centerY?: number): Polygon;
     static square(radius?: number, centerX?: number, centerY?: number): Polygon;
@@ -58,7 +60,7 @@ export declare class Polygon {
     static dodecagonBySideLength(sideLength: number, centerX?: number, centerY?: number): Polygon;
     rotate(angle: number): Polygon;
     contains(point: Point): boolean;
-    draw(ctx: CanvasRenderingContext2D, midpoints?: boolean, rays?: boolean, showPolygon?: boolean, showMotif?: boolean, showMotifFilled?: boolean, showIntersectionPoints?: boolean, canvas?: Canvas, motifStartIndex?: number, totalMotifs?: number): void;
+    draw(ctx: CanvasRenderingContext2D, midpoints?: boolean, rays?: boolean, showPolygon?: boolean, showMotif?: boolean, showMotifFilled?: boolean, style?: Style, showIntersectionPoints?: boolean, canvas?: Canvas, motifStartIndex?: number, totalMotifs?: number, showVertices?: boolean): void;
     color(ctx: CanvasRenderingContext2D, animationProgress?: number): void;
 }
 export {};

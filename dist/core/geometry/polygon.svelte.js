@@ -9,6 +9,7 @@ export class Polygon {
     contactAngle = 22.5;
     motifColor = 'purple';
     _manualVertices = null;
+    ancestorOriginalEdges = null;
     constructor(verticesOrConfig) {
         if (Array.isArray(verticesOrConfig)) {
             this._manualVertices = verticesOrConfig;
@@ -28,7 +29,7 @@ export class Polygon {
             return this._manualVertices;
         }
         if (this.sides && this.radius !== undefined && this.centerX !== undefined && this.centerY !== undefined) {
-            return this.generateRegularVertices(this.sides, this.radius, this.centerX, this.centerY);
+            return Polygon.generateRegularVertices(this.sides, this.radius, this.centerX, this.centerY);
         }
         return [];
     });
@@ -80,13 +81,40 @@ export class Polygon {
             return [];
         const midpoints = [];
         for (let i = 0; i < this.edges.length; i++) {
-            midpoints.push(this.edges[i].midpoint);
+            const edge = this.edges[i];
+            let contactPoint = edge.midpoint;
+            if (this.ancestorOriginalEdges && this.ancestorOriginalEdges.length > 0) {
+                const distance = (p1, p2) => Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+                const midpointToCenter = distance(contactPoint, this.center);
+                for (const originalEdge of this.ancestorOriginalEdges) {
+                    const intersection = edge.intersect(originalEdge);
+                    if (intersection) {
+                        const intersectionToCenter = distance(intersection, this.center);
+                        if (intersectionToCenter < midpointToCenter) {
+                            contactPoint = intersection;
+                            break;
+                        }
+                    }
+                }
+            }
+            midpoints.push(contactPoint);
         }
         return midpoints;
     });
     apothem = $derived.by(() => {
         return new Edge(this.center, this.edges[0].midpoint).magnitude;
     });
+    copy = () => {
+        const newPolygon = new Polygon(this.vertices);
+        newPolygon.style = this.style;
+        newPolygon.sides = this.sides;
+        newPolygon.radius = this.radius;
+        newPolygon.centerX = this.centerX;
+        newPolygon.centerY = this.centerY;
+        newPolygon.contactAngle = this.contactAngle;
+        newPolygon.motifColor = this.motifColor;
+        return newPolygon;
+    };
     rays = $derived.by(() => {
         if (this.edges.length < 2)
             return [];
@@ -146,7 +174,8 @@ export class Polygon {
         const EPSILON = 0.1;
         for (let i = 0; i < this.rays.length; i++) {
             const ray1 = this.rays[i];
-            const ray2 = this.rays[(i + 1) % this.rays.length];
+            const skip = this.edges.length > 5 ? 3 : 1;
+            const ray2 = this.rays[(i + skip) % this.rays.length];
             if (!ray1.origin || !ray2.origin)
                 continue;
             const originsDistanceSquared = (ray2.origin.x - ray1.origin.x, 2) * (ray2.origin.x - ray1.origin.x, 2) +
@@ -273,7 +302,7 @@ export class Polygon {
         }
         return polygons;
     });
-    generateRegularVertices(sides, radius, centerX, centerY) {
+    static generateRegularVertices(sides, radius, centerX, centerY) {
         const vertices = [];
         const angleStep = (2 * Math.PI) / sides;
         for (let i = 0; i < sides; i++) {
@@ -282,18 +311,20 @@ export class Polygon {
             const y = centerY + radius * Math.sin(angle);
             vertices.push(new Point(x, y));
         }
-        return vertices;
+        const centerPoint = new Point(centerX, centerY);
+        const cos = Math.cos(Math.PI / sides);
+        const sin = Math.sin(Math.PI / sides);
+        const rotatedVertices = vertices.map(vertex => {
+            const dx = vertex.x - centerPoint.x;
+            const dy = vertex.y - centerPoint.y;
+            return new Point(centerPoint.x + dx * cos - dy * sin, centerPoint.y + dx * sin + dy * cos);
+        });
+        return rotatedVertices;
     }
     static regular(sides, radius = 50, centerX = 0, centerY = 0) {
-        const vertices = [];
-        const angleStep = (2 * Math.PI) / sides;
-        for (let i = 0; i < sides; i++) {
-            const angle = i * angleStep - Math.PI / 2; // Start from top
-            const x = centerX + radius * Math.cos(angle);
-            const y = centerY + radius * Math.sin(angle);
-            vertices.push(new Point(x, y));
-        }
+        const vertices = Polygon.generateRegularVertices(sides, radius, centerX, centerY);
         const polygon = new Polygon(vertices);
+        polygon.radius = radius;
         polygon.sides = sides;
         polygon.centerX = centerX;
         polygon.centerY = centerY;
@@ -346,14 +377,19 @@ export class Polygon {
         const centerPoint = this.center;
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
-        this.vertices.forEach(vertex => {
+        const rotatedVertices = this.vertices.map(vertex => {
             const dx = vertex.x - centerPoint.x;
             const dy = vertex.y - centerPoint.y;
-            vertex.x = centerPoint.x + dx * cos - dy * sin;
-            vertex.y = centerPoint.y + dx * sin + dy * cos;
+            return new Point(centerPoint.x + dx * cos - dy * sin, centerPoint.y + dx * sin + dy * cos);
         });
-        const polygon = new Polygon(this.vertices);
+        const polygon = new Polygon(rotatedVertices);
         polygon.style = this.style;
+        polygon.sides = this.sides;
+        polygon.radius = this.radius;
+        polygon.centerX = this.centerX;
+        polygon.centerY = this.centerY;
+        polygon.contactAngle = this.contactAngle;
+        polygon.motifColor = this.motifColor;
         return polygon;
     }
     contains(point) {
@@ -367,7 +403,7 @@ export class Polygon {
         }
         return inside;
     }
-    draw(ctx, midpoints = false, rays = true, showPolygon = true, showMotif = false, showMotifFilled = false, showIntersectionPoints = false, canvas, motifStartIndex = 0, totalMotifs = 0) {
+    draw(ctx, midpoints = false, rays = true, showPolygon = true, showMotif = false, showMotifFilled = false, style = {}, showIntersectionPoints = false, canvas, motifStartIndex = 0, totalMotifs = 0, showVertices = false) {
         if (this.vertices.length < 2)
             return;
         if (showPolygon) {
@@ -398,9 +434,9 @@ export class Polygon {
         }
         if (showMotifFilled) {
             ctx.save();
-            const motifColor = this.style?.motifColor ?? this.motifColor;
             const baseOpacity = this.style?.fillOpacity ?? 1;
             for (let i = 0; i < this.motifPolygons.length; i++) {
+                const motifColor = style.motifColor ?? this.motifColor;
                 const polygon = this.motifPolygons[i];
                 if (polygon.length < 3)
                     continue;
@@ -451,6 +487,17 @@ export class Polygon {
                 const point = pair.intersectionPoint;
                 ctx.moveTo(point.x + 3, point.y);
                 ctx.ellipse(point.x, point.y, 3, 3, 0, 0, Math.PI * 2);
+            }
+            ctx.fill();
+            ctx.restore();
+        }
+        if (showVertices) {
+            ctx.save();
+            ctx.fillStyle = 'hotpink';
+            ctx.beginPath();
+            for (const vertex of this.vertices) {
+                ctx.moveTo(vertex.x + 4, vertex.y);
+                ctx.ellipse(vertex.x, vertex.y, 4, 4, 0, 0, Math.PI * 2);
             }
             ctx.fill();
             ctx.restore();

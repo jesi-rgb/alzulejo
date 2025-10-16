@@ -9,6 +9,7 @@ export class HexagonPattern extends TessellationPattern {
                     x: col * unitWidth + offsetX,
                     y: row * unitHeight,
                     polygonType: 'hexagon',
+                    rotation: Math.PI / 6,
                     relativeSize: 1.0,
                     styleKey: 'default'
                 };

@@ -35,7 +35,6 @@ export class OctagonSquarePattern extends TessellationPattern {
                     y: baseY + stepY / 2,
                     polygonType: 'octagon',
                     relativeSize: octagonRelativeSize,
-                    rotation: Math.PI / 8,
                     styleKey: 'style1'
                 };
                 yield {
@@ -43,27 +42,7 @@ export class OctagonSquarePattern extends TessellationPattern {
                     y: baseY + stepY,
                     polygonType: 'octagon',
                     relativeSize: octagonRelativeSize,
-                    rotation: Math.PI / 8,
                     styleKey: 'style1'
-                };
-                // Squares with same edge length as octagon
-                // Top square
-                yield {
-                    x: baseX + stepX / 2,
-                    y: baseY,
-                    polygonType: 'square',
-                    relativeSize: squareRelativeSize,
-                    rotation: Math.PI / 4,
-                    styleKey: 'style2'
-                };
-                // Right square
-                yield {
-                    x: baseX + stepX,
-                    y: baseY + stepY / 2,
-                    polygonType: 'square',
-                    relativeSize: squareRelativeSize,
-                    rotation: Math.PI / 4,
-                    styleKey: 'style2'
                 };
                 // Bottom square
                 yield {
@@ -71,7 +50,6 @@ export class OctagonSquarePattern extends TessellationPattern {
                     y: baseY + stepY,
                     polygonType: 'square',
                     relativeSize: squareRelativeSize,
-                    rotation: Math.PI / 4,
                     styleKey: 'style2'
                 };
                 // Left square
@@ -80,7 +58,6 @@ export class OctagonSquarePattern extends TessellationPattern {
                     y: baseY + stepY / 2,
                     polygonType: 'square',
                     relativeSize: squareRelativeSize,
-                    rotation: Math.PI / 4,
                     styleKey: 'style2'
                 };
             }

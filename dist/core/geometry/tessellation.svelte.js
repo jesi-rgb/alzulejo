@@ -2,11 +2,14 @@ import { Polygon } from './polygon.svelte';
 import { Canvas } from '../../render/canvas.svelte';
 import { TessellationPattern, PolygonFactory, HexagonPattern, TrianglePattern, SquarePattern, OctagonSquarePattern, RhombitrihexagonalPattern } from './patterns';
 import { SnubSquarePattern } from './patterns/SnubSquarePattern';
+import { Rosette } from './rosette.svelte';
+import { TruncatedHexagonalPattern } from './patterns/TruncatedHexagonalPattern';
 export class Tessellation {
     type = $state("hexagon");
     size = $state(50);
     width = $state(800);
     height = $state(600);
+    rosette = $state(true);
     offset = $state(0);
     contactAngle = $state(22.5);
     motifColor = $state('purple');
@@ -16,7 +19,7 @@ export class Tessellation {
     style2 = $state();
     style3 = $state();
     polygons = $derived.by(() => {
-        const newSystemTypes = ['triangle', 'square', 'hexagon', 'octagon-square', 'rhombitrihexagonal', 'snub-square'];
+        const newSystemTypes = ['triangle', 'square', 'hexagon', 'octagon-square', 'rhombitrihexagonal', 'truncated-hexagonal', 'snub-square'];
         if (newSystemTypes.includes(this.type)) {
             return this.generateFromPattern();
         }
@@ -37,21 +40,23 @@ export class Tessellation {
         this.style1 = config.style1;
         this.style2 = config.style2;
         this.style3 = config.style3;
+        this.rosette = config.rosette ?? false;
     }
     generateFromPattern() {
         const pattern = this.getPattern();
         if (!pattern)
             return [];
         const factory = new PolygonFactory(this.size, this.contactAngle, this.motifColor, this.style, this.style1, this.style2, this.style3);
-        const polygons = [];
+        let polygons = [];
         const bounds = { width: this.width, height: this.height };
         for (const tilePosition of pattern.generatePositions(bounds)) {
             const polygon = factory.create(tilePosition, tilePosition.x, tilePosition.y);
             polygons.push(polygon);
         }
-        // if (this.rosette) {
-        // 	return new RosetteTransform(this);
-        // }
+        if (this.rosette) {
+            polygons = Rosette.transform(polygons);
+            // polygons.push(...Rosette.transform(polygons));
+        }
         return polygons;
     }
     getPattern() {
@@ -68,6 +73,8 @@ export class Tessellation {
                 return new RhombitrihexagonalPattern(this.size);
             case 'snub-square':
                 return new SnubSquarePattern(this.size);
+            case 'truncated-hexagonal':
+                return new TruncatedHexagonalPattern(this.size);
             default:
                 return null;
         }
@@ -77,7 +84,7 @@ export class Tessellation {
         height: this.height,
         polygonCount: this.polygons.length
     });
-    draw(ctx, showPolygons = true, showMidpoints = false, showRays = false, showMotif = true, showMotifFilled = false, showIntersectionPoints = false, canvas) {
+    draw(ctx, showPolygons = true, showMidpoints = false, showRays = false, showMotif = true, showMotifFilled = false, showIntersectionPoints = false, canvas, showVertices = false) {
         if (this.polygons.length === 0)
             return;
         if (showPolygons) {
@@ -86,13 +93,15 @@ export class Tessellation {
                 this.drawPolygonGroup(ctx, polygons);
             }
         }
-        if (showMidpoints || showRays || showMotif || showMotifFilled || showIntersectionPoints) {
+        if (showMidpoints || showRays || showMotif || showMotifFilled || showIntersectionPoints || showVertices) {
             let motifIndex = 0;
             const totalMotifs = showMotifFilled
                 ? this.polygons.reduce((sum, p) => sum + p.motifPolygons.length, 0)
                 : 0;
+            const styleMap = [this.style, this.style1, this.style2, this.style3];
             for (let i = 0; i < this.polygons.length; i++) {
-                this.polygons[i].draw(ctx, showMidpoints, showRays, false, showMotif, showMotifFilled, showIntersectionPoints, canvas, motifIndex, totalMotifs);
+                const style = this.polygons[i].edges.length > 5 ? styleMap[1] : styleMap[2];
+                this.polygons[i].draw(ctx, showMidpoints, showRays, false, showMotif, showMotifFilled, style, showIntersectionPoints, canvas, motifIndex, totalMotifs, showVertices);
                 if (showMotifFilled) {
                     motifIndex += this.polygons[i].motifPolygons.length;
                 }
